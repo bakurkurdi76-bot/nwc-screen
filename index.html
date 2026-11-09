@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شاشة المياه الوطنية</title>
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  /* ===== عدّل ألوان الهوية من هنا ===== */
+  :root{
+    --brand:#0071BB;      /* أزرق الهوية */
+    --brand2:#00A7E2;     /* سماوي الهوية */
+    --accent:#03A88B;     /* أخضر الهوية */
+    --bg1:#001433; --bg2:#002060;
+    --text:#eaf4ff; --muted:#8fb3d6;
+    --card:rgba(255,255,255,.06); --line:rgba(255,255,255,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg1);color:var(--text);
+    font-family:"Almarai","Inter",sans-serif;cursor:none}
+  body{background:radial-gradient(1200px 800px at 85% -10%,#005C92 0%,transparent 60%),
+       radial-gradient(900px 700px at -10% 110%,#00595A 0%,transparent 60%),
+       linear-gradient(160deg,var(--bg2),var(--bg1))}
+  .en{font-family:"Inter",sans-serif;direction:ltr;unicode-bidi:isolate}
+  /* موجات خلفية خفيفة */
+  .waves{position:fixed;inset:auto 0 0 0;height:22vh;opacity:.18;pointer-events:none}
+  .waves svg{width:200%;height:100%;animation:flow 40s linear infinite}
+  @keyframes flow{to{transform:translateX(50%)}}
+
+  #stage{position:absolute;inset:3vh 3vw;display:grid;
+    grid-template-rows:auto 1fr auto;gap:2.5vh;transition:transform 4s ease}
+
+  /* الهيدر */
+  header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:2vh}
+  .brand{display:flex;align-items:center;gap:1.4vw}
+  .brand img{height:9vh;width:auto;display:block}
+  .brand .mark{width:7vh;height:7vh;border-radius:50%;
+    background:conic-gradient(from 200deg,var(--brand2),var(--brand),var(--accent),var(--brand2));
+    display:grid;place-items:center}
+  .brand .mark::after{content:"";width:3vh;height:4vh;background:#fff;opacity:.92;
+    border-radius:50% 50% 50% 50%/60% 60% 40% 40%;transform:rotate(180deg)}
+  .brand h1{font-size:3.4vh;font-weight:700;line-height:1.2}
+  .brand h2{font-size:2.1vh;font-weight:400;color:var(--muted)}
+  .weather{display:flex;align-items:center;gap:1.2vw;text-align:left}
+  .weather .t{font-size:7vh;font-weight:300;font-family:Inter}
+  .weather .d{font-size:2vh;color:var(--muted);line-height:1.5;text-align:right}
+  .weather .ic{font-size:6vh}
+
+  /* المنتصف */
+  main{display:grid;grid-template-columns:1.1fr 1fr;gap:3vw;align-items:center}
+  .clock{font-family:Inter;font-weight:300;font-size:19vh;line-height:1;letter-spacing:-.02em;direction:ltr;text-align:right}
+  .clock small{font-size:5vh;color:var(--muted);margin-inline-start:1vw}
+  .dates{margin-top:2vh;display:grid;gap:1vh}
+  .dates .row{display:flex;justify-content:space-between;gap:2vw;font-size:3vh;border-top:1px solid var(--line);padding-top:1vh}
+  .dates .row .en{color:var(--muted)}
+  .dates .row.big{font-size:3.6vh;font-weight:600;border:0;padding:0}
+
+  .feature{background:linear-gradient(135deg,rgba(0,166,200,.22),rgba(10,94,168,.18));
+    border:1px solid rgba(0,166,200,.35);border-radius:3vh;padding:4vh 3vw;text-align:center}
+  .feature .lbl{color:var(--muted);font-size:2.4vh}
+  .feature .num{font-size:20vh;font-weight:700;line-height:1;margin:1vh 0;
+    background:linear-gradient(180deg,#fff,var(--brand2));-webkit-background-clip:text;color:transparent}
+  .feature .unit{font-size:3vh}
+  .feature .name{font-size:4.4vh;font-weight:700;margin-top:1.5vh}
+  .feature .nameEn{font-size:2.6vh;color:var(--muted)}
+  .feature .when{font-size:2.2vh;color:var(--accent);margin-top:1vh}
+
+  /* شريط الأحداث */
+  .events{display:grid;grid-template-columns:repeat(5,1fr);gap:1.2vw}
+  .ev{background:var(--card);border:1px solid var(--line);border-radius:2vh;padding:2vh 1.2vw;
+    display:flex;flex-direction:column;gap:.6vh;min-height:17vh}
+  .ev .tag{font-size:1.6vh;padding:.3vh .8vw;border-radius:2vh;align-self:flex-start}
+  .tag.rel{background:rgba(60,198,164,.18);color:#7fe3c8}
+  .tag.wq{background:rgba(0,166,200,.2);color:#8fe2f5}
+  .tag.nat{background:rgba(120,200,90,.18);color:#b5e79a}
+  .tag.sch{background:rgba(255,190,90,.18);color:#ffd28f}
+  .ev .n{font-size:5.4vh;font-weight:700;line-height:1}
+  .ev .n span{font-size:2vh;font-weight:400;color:var(--muted);margin-inline-start:.4vw}
+  .ev .t1{font-size:2.3vh;font-weight:600}
+  .ev .t2{font-size:1.7vh;color:var(--muted)}
+  .ev .dt{font-size:1.6vh;color:var(--muted);margin-top:auto}
+  .today{color:var(--accent)!important}
+
+  /* مشغّل القرآن */
+  .quran{display:flex;align-items:center;gap:1vw;padding:1vh 1.6vw;border-radius:5vh;
+    border:1px solid var(--line);background:var(--card);font-size:2.2vh;color:var(--muted);transition:.3s}
+  .quran.on{color:var(--text);border-color:rgba(3,168,139,.6);background:rgba(3,168,139,.15)}
+  .quran .bars{display:flex;gap:.25vw;align-items:flex-end;height:2.4vh}
+  .quran .bars i{width:.35vw;min-width:3px;height:30%;background:var(--accent);border-radius:2px}
+  .quran.on .bars i{animation:eq 1s ease-in-out infinite}
+  .quran.on .bars i:nth-child(2){animation-delay:.2s}.quran.on .bars i:nth-child(3){animation-delay:.4s}
+  @keyframes eq{0%,100%{height:25%}50%{height:100%}}
+  .quran .hint{font-size:1.6vh;opacity:.7}
+
+  /* بطاقة رسالة اليوم */
+  .clock{font-size:15vh!important}
+  .dcard{margin-top:2.2vh;border-radius:2.4vh;padding:2vh 1.8vw;
+    background:linear-gradient(135deg,rgba(3,168,139,.16),rgba(0,113,187,.14));border:1px solid rgba(3,168,139,.35)}
+  .dcard .top{display:flex;align-items:center;gap:.8vw;font-size:1.8vh;color:var(--muted);margin-bottom:1vh}
+  .dcard .top b{color:var(--accent);font-weight:700;font-size:2vh}
+  .dcard .top .tg{padding:.2vh .8vw;border-radius:2vh;background:rgba(255,255,255,.08)}
+  .dcard .top .no{margin-inline-start:auto;font-family:Inter;direction:ltr;unicode-bidi:isolate}
+  .dcard .ttl{font-size:2.6vh;font-weight:800;color:var(--accent)}
+  .dcard .ayah{font-size:3vh;font-weight:700;line-height:1.5}
+  .dcard .ref{font-size:1.7vh;color:var(--muted);margin-bottom:.6vh}
+  .dcard .msg{font-size:2.8vh;font-weight:700;line-height:1.45}
+  .dcard .ayah + .ref + .msg, .dcard .ttl + .msg{font-size:2.4vh;font-weight:400}
+
+  /* لوحة الصلاة */
+  .pray{background:linear-gradient(135deg,rgba(0,167,226,.20),rgba(0,113,187,.16));
+    border:1px solid rgba(0,167,226,.35);border-radius:3vh;padding:3vh 2.4vw;display:flex;flex-direction:column;gap:1.2vh;transition:.5s}
+  .pray.iqama{background:linear-gradient(135deg,rgba(3,168,139,.28),rgba(0,113,187,.14));border-color:rgba(3,168,139,.6)}
+  .pray .lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:2.3vh}
+  .pray .nm{display:flex;align-items:baseline;gap:1.2vw}
+  .pray .nm b{font-size:7vh;font-weight:800;line-height:1.1}
+  .pray .nm span{font-size:2.6vh;color:var(--muted)}
+  .pray .cd{font-family:Inter;font-weight:300;font-size:11vh;line-height:1;direction:ltr;text-align:right;
+    background:linear-gradient(180deg,#fff,var(--brand2));-webkit-background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
+  .pray.iqama .cd{background:linear-gradient(180deg,#fff,var(--accent));-webkit-background-clip:text}
+  .pray .sub{font-size:2.3vh;color:var(--text)}
+  .pray .sub em{font-style:normal;color:var(--accent)}
+  .strip{display:grid;grid-template-columns:repeat(6,1fr);gap:.6vw;margin-top:1vh;border-top:1px solid var(--line);padding-top:1.6vh}
+  .strip div{text-align:center;padding:1vh .3vw;border-radius:1.4vh}
+  .strip div i{display:block;font-style:normal;font-size:1.8vh;color:var(--muted)}
+  .strip div s{display:block;text-decoration:none;font-family:Inter;font-size:2.4vh;font-weight:600;direction:ltr}
+  .strip .past{opacity:.4}
+  .strip .next{background:rgba(255,255,255,.12);outline:1px solid rgba(0,167,226,.6)}
+  .strip .next i{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="waves"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path fill="#00a6c8" d="M0,60 C150,110 300,10 450,60 C600,110 750,10 900,60 C1050,110 1200,10 1350,60 L1350,120 L0,120Z"/><path fill="#0a5ea8" opacity=".6" d="M0,80 C200,40 400,120 600,80 C800,40 1000,120 1200,80 L1200,120 L0,120Z"/></svg></div>
+
+<div id="yt" style="position:fixed;left:-9999px;top:0;width:320px;height:180px;opacity:0;pointer-events:none"></div>
+<div id="stage">
+  <header>
+    <div class="brand"><img src="data:image/png;base64,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" alt="شركة المياه الوطنية"></div>
+    <div class="quran" id="quran">
+      <div class="bars"><i></i><i></i><i></i></div>
+      <div><div id="qTitle">القرآن الكريم · محمد مسعد</div><div class="hint" id="qHint">اضغط OK للتشغيل</div><div class="hint" id="qFajr"></div></div>
+    </div>
+    <div class="weather">
+      <div class="d"><div id="wDesc">جاري تحميل الطقس…</div><div>المدينة المنورة · <span class="en">Madinah</span></div><div id="wMinMax" class="en"></div></div>
+      <div class="ic" id="wIcon"></div>
+      <div class="t" id="wTemp"></div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="clock" id="clock">--:--<small id="ampm"></small></div>
+      <div class="dates">
+        <div class="row big"><span id="dayAr"></span><span class="en" id="dayEn"></span></div>
+        <div class="row"><span id="hijriAr"></span><span class="en" id="hijriEn"></span></div>
+        <div class="row"><span id="gregAr"></span><span class="en" id="gregEn"></span></div>
+      </div>
+      <div class="dcard" id="dcard"></div>
+    </section>
+    <section class="pray" id="pray"></section>
+  </main>
+
+  <section class="events" id="events"></section>
+</div>
+
+<script>
+/* ================= الإعدادات ================= */
+const LAT = 24.4686, LON = 39.6142;   // المدينة المنورة
+const CARDS = 5;                        // عدد بطاقات الأحداث في الشريط السفلي
+
+/* أحداث بتاريخ ميلادي ثابت (تتكرر سنوياً): [شهر, يوم] */
+const FIXED = [
+  {ar:"يوم التأسيس", en:"Founding Day", m:2, d:22, cat:"nat"},
+  {ar:"يوم العلم", en:"Flag Day", m:3, d:11, cat:"nat"},
+  {ar:"اليوم العالمي للمياه", en:"World Water Day", m:3, d:22, cat:"wq"},
+  {ar:"يوم الصحة العالمي", en:"World Health Day", m:4, d:7, cat:"wq"},
+  {ar:"اليوم العالمي للبيئة", en:"World Environment Day", m:6, d:5, cat:"wq"},
+  {ar:"اليوم العالمي لرصد المياه", en:"World Water Monitoring Day", m:9, d:18, cat:"wq"},
+  {ar:"اليوم الوطني", en:"Saudi National Day", m:9, d:23, cat:"nat"},
+  {ar:"اليوم العالمي للتقييس", en:"World Standards Day", m:10, d:14, cat:"wq"},
+];
+
+/* أحداث هجرية (تُحسب تلقائياً بتقويم أم القرى): [شهر هجري, يوم] */
+const HIJRI = [
+  {ar:"شهر رمضان المبارك", en:"Ramadan", hm:9, hd:1, cat:"rel"},
+  {ar:"عيد الفطر المبارك", en:"Eid Al-Fitr", hm:10, hd:1, cat:"rel"},
+  {ar:"يوم عرفة", en:"Day of Arafah", hm:12, hd:9, cat:"rel"},
+  {ar:"عيد الأضحى المبارك", en:"Eid Al-Adha", hm:12, hd:10, cat:"rel"},
+  {ar:"رأس السنة الهجرية", en:"Islamic New Year", hm:1, hd:1, cat:"rel"},
+];
+
+/* إجازات المدارس — التقويم الدراسي 1448هـ (حدّثها كل سنة) */
+const SCHOOL = [
+  {ar:"إجازة الخريف", en:"Autumn Break", date:"2026-11-20", cat:"sch"},
+  {ar:"إجازة منتصف العام", en:"Mid-Year Break", date:"2027-01-08", cat:"sch"},
+  {ar:"إجازة يوم التأسيس", en:"Founding Day Break", date:"2027-02-19", cat:"sch"},
+  {ar:"إجازة عيد الفطر (المدارس)", en:"Eid Al-Fitr School Break", date:"2027-02-26", cat:"sch"},
+  {ar:"إجازة عيد الأضحى (المدارس)", en:"Eid Al-Adha School Break", date:"2027-05-07", cat:"sch"},
+  {ar:"إجازة نهاية العام الدراسي", en:"End of School Year", date:"2027-06-24", cat:"sch"},
+];
+
+const TAGS = {rel:["ديني","rel"], wq:["جودة ومياه","wq"], nat:["وطني","nat"], sch:["تعليم","sch"]};
+
+/* ================= أدوات ================= */
+const $ = id => document.getElementById(id);
+const DAY = 864e5;
+const midnight = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const hParts = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura",{day:"numeric",month:"numeric",year:"numeric"});
+function hijri(d){const p={};hParts.formatToParts(d).forEach(x=>p[x.type]=x.value);return {y:+p.year,m:+p.month,d:+p.day};}
+const arNum = n => String(n);
+
+/* يوم الجودة العالمي = ثاني خميس من نوفمبر */
+function qualityDay(y){const d=new Date(y,10,1);while(d.getDay()!==4)d.setDate(d.getDate()+1);d.setDate(d.getDate()+7);return d;}
+
+function buildEvents(){
+  const today = midnight(new Date());
+  const list = [];
+  const y = today.getFullYear();
+  // يوم الجودة
+  let q = qualityDay(y); if(q<today) q = qualityDay(y+1);
+  list.push({ar:"يوم الجودة العالمي", en:"World Quality Day", date:q, cat:"wq"});
+  // الثابتة
+  FIXED.forEach(e=>{let d=new Date(y,e.m-1,e.d); if(d<today) d=new Date(y+1,e.m-1,e.d); list.push({...e,date:d});});
+  // الهجرية: مسح 400 يوم قادمة
+  const found = {};
+  for(let i=0;i<400;i++){
+    const d = new Date(today.getTime()+i*DAY+12*3600e3); const h = hijri(d);
+    HIJRI.forEach((e,k)=>{ if(!found[k] && h.m===e.hm && h.d===e.hd){found[k]=1; list.push({...e,date:midnight(d)});} });
+  }
+  // المدارس
+  SCHOOL.forEach(e=>{const [a,b,c]=e.date.split("-").map(Number); const d=new Date(a,b-1,c); if(d>=today) list.push({...e,date:d});});
+  list.forEach(e=>e.days=Math.round((e.date-today)/DAY));
+  return list.sort((a,b)=>a.days-b.days);
+}
+
+
+/* أسماء ثابتة بدل الاعتماد على لغة المتصفح (بعض التلفزيونات تعرضها خطأ) */
+const HM_AR=["محرم","صفر","ربيع الأول","ربيع الآخر","جمادى الأولى","جمادى الآخرة","رجب","شعبان","رمضان","شوال","ذو القعدة","ذو الحجة"];
+const HM_EN=["Muharram","Safar","Rabi I","Rabi II","Jumada I","Jumada II","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qadah","Dhu al-Hijjah"];
+const GM_AR=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+const GM_EN=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const WD_AR=["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const WD_EN=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const gAr=(d,yr=true)=>`${d.getDate()} ${GM_AR[d.getMonth()]}${yr?" "+d.getFullYear():""}`;
+const fmtGregAr={format:d=>gAr(d)}; const fmtShortAr={format:d=>gAr(d,false)};
+
+function renderEvents(){
+  const ev = buildEvents();
+  $("events").innerHTML = ev.slice(0, CARDS).map(e=>`
+    <div class="ev">
+      <span class="tag ${TAGS[e.cat][1]}">${TAGS[e.cat][0]}</span>
+      <div class="n ${e.days===0?'today':''}">${e.days===0?"اليوم":arNum(e.days)}${e.days>0?`<span>يوم</span>`:""}</div>
+      <div class="t1">${e.ar}</div>
+      <div class="t2 en">${e.en}</div>
+      <div class="dt">${fmtShortAr.format(e.date)}</div>
+    </div>`).join("");
+}
+
+
+/* ================= مبادرة البطاقات: بطاقة جديدة كل يوم ================= */
+/* تبدأ بالبطاقة 001 يوم 5 نوفمبر 2026، ثم بالترتيب، وتعيد الدورة بعد 131 يوماً */
+const DAILY = [[1, "الجودة", ["الجودة تبدأ بتفصيل صغير، وأثرها يصنع فرقًا كبيرًا."]], [2, "التحفيز", ["كن مبادرًا حين ترى حاجة تستطيع تلبيتها."]], [3, "الجودة", ["دقة اليوم تبني ثقة الغد."]], [4, "الحوكمة", ["توثيق أسباب القرار يجعل مراجعته وفهمه أسهل لاحقًا."]], [5, "القيم الإيمانية", ["﴿وَأَحْسِنُوا إِنَّ اللَّهَ يُحِبُّ الْمُحْسِنِينَ﴾", "البقرة: 195 | مقتطف من الآية", "اجعل الإحسان حاضرًا في عملك وتعاملك."]], [6, "التعاون والتقدير", ["شكرٌ محدد على جهد محدد يجعل التقدير أكثر أثرًا."]], [7, "الجودة", ["استمع إلى شكوى المستفيد؛ فقد تكشف فرصة لتحسين الخدمة."]], [8, "التحفيز", ["لا تنتظر الثناء لتعتز بعمل أديته بإخلاص."]], [9, "الحوكمة", ["المساءلة العادلة تبدأ بمسؤوليات وتوقعات معلنة."]], [10, "الجودة", ["الجودة: اكتب ما تعمل، واعمل ما تكتب."]], [11, "التحديات", ["إذا تكررت المشكلة، عالج سببها بدل الاكتفاء بأثرها الظاهر."]], [12, "القيم الإيمانية", ["﴿وَقُلِ اعْمَلُوا فَسَيَرَى اللَّهُ عَمَلَكُمْ﴾", "التوبة: 105 | مقتطف من الآية", "أخلص في عملك، وأحسن أداء ما اؤتمنت عليه."]], [13, "المخاطر", ["لكل خطر مسؤول يتابع إجراءات التعامل معه وتطور حالته."]], [14, "التحفيز", ["اختر القدوة التي تلهمك، واصنع طريقك بخبرتك وقيمك."]], [15, "الامتثال", ["الامتثال يبدأ بمعرفة المتطلبات التي تنطبق على عملك."]], [16, "الجودة", ["لنمنح الأعمال المتكررة انتباهًا جديدًا كل مرة."]], [17, "التواصل والإنصات", ["قبل أن تحكم على الفكرة، امنح صاحبها فرصة إكمالها."]], [18, "الحوكمة", ["الصلاحية أمانة؛ استخدمها لتيسير العمل وتحقيق المصلحة المشتركة."]], [19, "القيم الإيمانية", ["﴿وَأَنْ لَيْسَ لِلْإِنْسَانِ إِلَّا مَا سَعَى﴾", "النجم: 39", "ابذل ما تستطيع، وأحسن السعي، وتوكّل على الله."]], [20, "الجودة", ["الإجراءات الواضحة تجعل أداء العمل أكثر اتساقًا."]], [21, "الحياة العملية", ["قبل إجازتك، سلّم المهام المفتوحة مع بيان حالتها والخطوة التالية."]], [22, "المخاطر", ["خطة الاستجابة المفيدة تحدد الإجراء والمسؤول ووقت التنفيذ."]], [23, "الامتثال", ["إذا لم يتضح لك متطلب، اسأل الجهة المختصة بدل الاجتهاد في تفسيره."]], [24, "الحياة العملية", ["قدّر الوقت اللازم لمهامك بواقعية، واتفق على ما يمكن إنجازه."]], [25, "التحفيز", ["قيمتك أوسع من نتيجة مهمة واحدة؛ واصل بثقة واتزان."]], [26, "القيم الإيمانية", ["الإخلاص", "جدّد نيتك؛ واجعل في عملك نفعًا للناس."]], [27, "التحفيز", ["تجرّأ على تقديم فكرتك، وكن مستعدًا لتطويرها."]], [28, "التواصل والإنصات", ["ابدأ رسالتك بالمطلوب، ثم أضف المعلومات التي تساعد على تنفيذه."]], [29, "التحفيز", ["خصص وقتًا لفكرة تؤمن بأنها ستجعل العمل أفضل."]], [30, "الحوكمة", ["قرارات الاجتماعات تحتاج متابعة؛ حدّد المسؤول وراجع ما أُنجز."]], [31, "التعاون والتقدير", ["التعاون بين الإدارات جزء من مسؤولية العمل، وليس معروفًا شخصيًا."]], [32, "القيم الإيمانية", ["الأمانة", "أدِّ ما اؤتمنت عليه بإخلاص، في حضور الرقيب وغيابه."]], [33, "التحفيز", ["لديك خبرات اكتسبتها بصبر؛ استند إليها وأنت تتعلم الجديد."]], [34, "الامتثال", ["الضابط الذي لا يُطبّق لا يؤدي غرضه؛ تحقّق من تطبيقه في العمل اليومي."]], [35, "التعاون والتقدير", ["حين يطلب زميلك إجراءً ضمن اختصاصك، فهو يطلب تكامل الأدوار."]], [36, "الجودة", ["الوعد الواقعي الذي تفي به أساس لخدمة جديرة بالثقة."]], [37, "التعاون والتقدير", ["حين ينجح العمل، اذكر من أسهم فيه."]], [38, "القيم الإيمانية", ["التوكّل", "خذ بالأسباب، وتوكّل على الله في النتائج."]], [39, "التحديات", ["بعد تجاوز التحدي، شارك الدرس الذي يمكن للفريق الاستفادة منه."]], [40, "التحفيز", ["النجاح هو محصلة اجتهادات صغيرة تتراكم يومًا بعد يوم."]], [41, "الجودة", ["قدّم للمستفيد عملاً يسهل فهمه والاستفادة منه."]], [42, "الحياة العملية", ["جدد طاقتك خارج العمل بما يمنحك راحة ومعنى."]], [43, "المخاطر", ["وجود ضابط لا يعني زوال الخطر؛ قيّم ما يتبقى منه بعد تطبيقه."]], [44, "التواصل والإنصات", ["إذا تضاربت التعليمات، اطلب توضيحًا من المعنيين قبل التنفيذ."]], [45, "القيم الإيمانية", ["مراقبة الله", "أحسن عملك؛ فالله مطّلع على ما تبذل."]], [46, "التحديات", ["عندما تكبر المهمة، قسّمها إلى خطوات يمكن التعامل معها."]], [47, "الجودة", ["نجاح التحسين يبدأ بتحديد ما نريد أن يصبح أفضل."]], [48, "المخاطر", ["إدارة المخاطر تساعدنا على حماية الأهداف والاستعداد لما قد يعوقها."]], [49, "التحفيز", ["أثر عملك قد يصل إلى أشخاص لم تلتقِ بهم."]], [50, "الجودة", ["جودة التسليم تشمل إغلاق الطلب وإبلاغ صاحبه بما أُنجز."]], [51, "التواصل والإنصات", ["عند تغيّر الموعد، أخبر من يعتمد عمله على تسليمك، واذكر الموعد الجديد."]], [52, "القيم الإيمانية", ["نفع الناس", "احتسب عند الله ما تيسّره من مصالح الناس."]], [53, "التحفيز", ["ازرع الأمل بكلمة صادقة؛ قد تمنح غيرك دفعة يحتاجها."]], [54, "المخاطر", ["إذا تجاوز خطر حدود صلاحيتك، صعّده إلى المعنيين عبر المسار المعتمد."]], [55, "التحديات", ["عند الخطأ، نفهم السبب ونتفق على خطوة تمنع تكراره."]], [56, "الجودة", ["جودة العمل مسؤولية نتقاسمها؛ كلٌّ منا يسهم من موقعه."]], [57, "الحوكمة", ["التفويض الجيد يحدد المهمة والصلاحية والمتابعة بوضوح."]], [58, "التحفيز", ["مهارتك تنمو مع الممارسة، خطوة بعد خطوة."]], [59, "القيم الإيمانية", ["الرفق", "اجعل الرفق حاضرًا في توجيهك، خاصة عند تصحيح الخطأ."]], [60, "الجودة", ["التوثيق الجيد يحفظ المعرفة، ويجعل الرجوع إليها أسهل."]], [61, "التحفيز", ["استثمر في تعلّمك؛ المعرفة ترافقك إلى مهام جديدة."]], [62, "التواصل والإنصات", ["لا تؤجل محادثة ضرورية لمجرد أنها صعبة؛ استعد لها وابدأ باحترام."]], [63, "الجودة", ["تبسيط الإجراء مع الحفاظ على متطلباته يرفع جودة الخدمة."]], [64, "التحديات", ["اطلب المساندة مبكرًا حين تحتاجها؛ التعاون يوسّع خياراتك."]], [65, "التعاون والتقدير", ["نجاح إدارتك يكتمل حين تساعد الإدارات الأخرى على النجاح."]], [66, "القيم الإيمانية", ["العدل", "اعدل في توزيع العمل كما تعدل في تقدير الإنجاز."]], [67, "التحديات", ["غيّر طريقتك إذا دلّت التجربة على حاجتك إلى مسار أفضل."]], [68, "التواصل والإنصات", ["افصل بين نقد الفكرة وتقييم صاحبها؛ الاختلاف لا يلغي الاحترام."]], [69, "الامتثال", ["احمِ معلومات العمل؛ شاركها مع المخوّلين وبالقدر اللازم للمهمة."]], [70, "التحفيز", ["نجاحك أجمل حين يتسع لنجاح من حولك."]], [71, "الحوكمة", ["أفصح عن تعارض المصالح المحتمل عبر القنوات المعتمدة لحماية نزاهة القرار."]], [72, "القيم الإيمانية", ["التواضع", "اشكر الله على ما تعلم، وتواضع لتتعلّم المزيد."]], [73, "الامتثال", ["إذا احتجت إلى استثناء، اتبع مسار اعتماده ووثّق مبرراته."]], [74, "التحديات", ["عند اختلاف المصالح، ابحث عن أرضية مشتركة يبدأ منها الحل."]], [75, "التعاون والتقدير", ["القائد الذي ينصت لفريقه يرى ما لا تكشفه التقارير."]], [76, "التعاون والتقدير", ["اجعل من السهل على فريقك أن يخبرك بالمشكلة قبل أن تتفاقم."]], [77, "القيم الإيمانية", ["الشكر", "اشكر الله على نعمه، واشكر من أحسن إليك."]], [78, "المخاطر", ["قبل بدء مهمة جديدة، اسأل: ما الذي قد يتعطل، وما أثره؟"]], [79, "التحديات", ["إذا تزاحمت المطالب، ناقش الأولويات مع المعنيين."]], [80, "الجودة", ["المعلومة الموثوقة لها مصدر واضح يمكن الرجوع إليه."]], [81, "التحديات", ["قبل البحث عن الحل، اتفقوا على وصف المشكلة."]], [82, "التواصل والإنصات", ["إن لم تملك الإجابة الآن، أكّد استلام الطلب وحدّد موعدًا للرد."]], [83, "التحديات", ["ليس كل عائق تحت سيطرتك؛ حدّد ما يمكنك فعله دون استنزاف نفسك."]], [84, "القيم الإيمانية", ["الصبر", "استعن بالله، وواجه مشقة العمل بصبر وحسن تصرف."]], [85, "التعاون والتقدير", ["لا تجعل إتقان فريقك أمرًا معتادًا يمر بلا تقدير."]], [86, "الحوكمة", ["فصل الأدوار الرقابية عن التنفيذ، حيث تتطلب الإجراءات ذلك، يدعم سلامة العمل."]], [87, "التواصل والإنصات", ["قد تأتي أفضل فكرة ممن يختلف معك؛ امنحها حقها من النظر."]], [88, "المخاطر", ["المؤشرات المبكرة تمنحنا فرصة للتحرك قبل تفاقم الخطر."]], [89, "الامتثال", ["ارجع إلى النسخة المعتمدة والأحدث من السياسة قبل تطبيقها."]], [90, "التحفيز", ["اختر تحديًا يوسّع قدراتك بدل البقاء دائمًا فيما تتقنه."]], [91, "القيم الإيمانية", ["حفظ اللسان", "اختر كلمة تحفظ الكرامة وتعين على الإصلاح."]], [92, "الجودة", ["ترتيب مساحة العمل يجعل التفاصيل المهمة أسهل ملاحظة."]], [93, "التحفيز", ["الاستمرار يصبح أسهل حين يكون هدفك واضحًا."]], [94, "التواصل والإنصات", ["الرد على زميلك جزء من إنجازك؛ فقد يتوقف عمله على إجابتك."]], [95, "التحفيز", ["قد تأتي الفرصة في صورة مسؤولية جديدة؛ انظر إلى ما تتيحه لك."]], [96, "المخاطر", ["عندما تتغير ظروف العمل، حدّث تقييم المخاطر وإجراءات التعامل معها."]], [97, "الحياة العملية", ["ميّز في قائمتك بين مهمة تعمل عليها وأخرى تنتظر ردًا من غيرك."]], [98, "القيم الإيمانية", ["حسن الظن", "التمس العذر، وتحقّق قبل أن تحكم."]], [99, "الجودة", ["ابدأ من احتياج المستفيد، ثم حدّد ما يجعل الخدمة أفضل."]], [100, "التواصل والإنصات", ["إذا تعذّر تنفيذ طلب، اشرح السبب وقدّم بديلاً ممكنًا."]], [101, "الجودة", ["قبل أن تقول «اكتمل»، راجع التفاصيل التي تصنع الجودة."]], [102, "التعاون والتقدير", ["التقدير يشمل الجهود الهادئة التي لا تظهر للجميع."]], [103, "الحوكمة", ["شفافية التقارير تعني عرض الإنجاز والتعثر معًا بصورة دقيقة."]], [104, "الحياة العملية", ["استراحة قصيرة تساعدك على العودة إلى العمل بانتباه أفضل."]], [105, "القيم الإيمانية", ["الوفاء", "اجعل الوفاء بالوعد خُلُقًا يظهر في مواعيدك والتزاماتك."]], [106, "التحديات", ["حين تتعثر المحاولة، راجع ما تعلّمته قبل الخطوة التالية."]], [107, "التواصل والإنصات", ["إذا طال تبادل الرسائل دون حسم، انتقل إلى حوار مباشر ووثّق الاتفاق."]], [108, "الجودة", ["لا تجعل سرعة الإنجاز تسبق سلامة التنفيذ."]], [109, "الحياة العملية", ["اجعل التعلّم جزءًا صغيرًا ثابتًا من أسبوعك."]], [110, "التحديات", ["امنح نفسك وقتًا للتكيّف مع التغيير، واطلب ما تحتاجه لفهمه."]], [111, "الامتثال", ["عند الاشتباه في مخالفة، أبلغ عبر القنوات المعتمدة وبمعلومات دقيقة."]], [112, "القيم الإيمانية", ["النصيحة", "انصح بصدق ورفق، واختر للنصيحة وقتها وأسلوبها."]], [113, "التحفيز", ["طموحك يستحق مكانًا في يومك، لا في قائمة الأمنيات فقط."]], [114, "التحفيز", ["ابدأ بما تستطيع اليوم، ودع الخطوة الأولى تفتح الطريق."]], [115, "الامتثال", ["نزاهة السجلات تقتضي تسجيل ما حدث كما حدث، دون إخفاء أو تعديل مضلل."]], [116, "القيم الإيمانية", ["حقوق الآخرين", "احفظ حقوق زملائك في وقتهم وجهدهم وكرامتهم."]], [117, "التعاون والتقدير", ["الكلمة اللطيفة تضيف إلى اليوم مساحة من الود."]], [118, "الامتثال", ["المواعيد النظامية والتعاقدية جزء من الالتزام؛ تابعها قبل حلولها."]], [119, "الجودة", ["الجودة تنمو عندما نفهم سبب كل خطوة."]], [120, "الحوكمة", ["الموارد أمانة؛ استخدمها للغرض المخصص لها وبما يحقق المصلحة العامة."]], [121, "التواصل والإنصات", ["اجعل ملاحظتك محددة: ما الذي لاحظته، وما أثره، وما التحسين المقترح؟"]], [122, "التحفيز", ["مسؤوليتك تشمل ما تكتشفه من خلل: وثّقه، وارفع الحل المقترح، وتابع المعالجة ضمن صلاحياتك."]], [123, "القيم الإيمانية", ["التسامح", "تقبّل الاعتذار، وأفسح مجالًا لتصحيح الخطأ."]], [124, "المخاطر", ["ضع بديلاً للمهام الحرجة التي تعتمد على مورد واحد."]], [125, "الحياة العملية", ["قبل قبول مهمة إضافية، راجع أثرها على التزاماتك الحالية."]], [126, "التواصل والإنصات", ["اختم النقاش بتحديد المسؤول عن الخطوة التالية وموعدها."]], [127, "الحياة العملية", ["خصص للمهام التي تتطلب تركيزًا وقتًا تحميه من المقاطعات."]], [128, "الجودة", ["المعيار الواضح يساعدنا على تقييم العمل بإنصاف."]], [129, "التحفيز", ["ابحث عن الجزء الذي تستطيع التأثير فيه، وابدأ منه."]], [130, "القيم الإيمانية", ["محاسبة النفس", "قبل أن تراجع أداء غيرك، راجع ما عليك من واجبات."]], [131, "الحوكمة", ["حين تطلب سرعة الإنجاز، راجع مسار الاعتماد؛ اختصر خطواته، وفوّض ما يمكن، وحدّد زمنًا للرد."]]];
+const CARD_START = new Date(2026,10,5);
+const esc = s => s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function renderCard(){
+  const days = Math.round((midnight(new Date()) - CARD_START)/DAY);
+  const [n,cat,t] = DAILY[((days % DAILY.length)+DAILY.length) % DAILY.length];
+  let body;
+  if(t.length>=3)      body = `<div class="ayah">${esc(t[0])}</div><div class="ref">${esc(t[1])}</div><div class="msg">${esc(t.slice(2).join(" "))}</div>`;
+  else if(t.length==2) body = `<div class="ttl">${esc(t[0])}</div><div class="msg">${esc(t[1])}</div>`;
+  else                 body = `<div class="msg">${esc(t[0])}</div>`;
+  $("dcard").innerHTML = `<div class="top"><b>رسالة اليوم</b><span class="tg">${esc(cat)}</span><span class="no">${String(n).padStart(3,"0")} / ${DAILY.length}</span></div>${body}`;
+}
+
+
+/* ================= مواقيت الصلاة (أم القرى) ================= */
+/* الإقامة بعد الأذان بالدقائق — عدّلها حسب مسجدكم */
+const IQAMA = {fajr:25, dhuhr:20, asr:20, maghrib:10, isha:20};
+const ADJ   = {fajr:0, sunrise:0, dhuhr:0, asr:0, maghrib:0, isha:0};   // تصحيح يدوي بالدقائق إن لزم
+const P_AR = {fajr:"الفجر", sunrise:"الشروق", dhuhr:"الظهر", asr:"العصر", maghrib:"المغرب", isha:"العشاء"};
+const P_EN = {fajr:"Fajr", sunrise:"Sunrise", dhuhr:"Dhuhr", asr:"Asr", maghrib:"Maghrib", isha:"Isha"};
+function prayerTimes(date, lat, lng, tz){
+  const rad=Math.PI/180, deg=180/Math.PI;
+  const y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
+  let Y=y,M=m; if(M<=2){Y-=1;M+=12;}
+  const Aa=Math.floor(Y/100), B=2-Aa+Math.floor(Aa/4);
+  const jDate=Math.floor(365.25*(Y+4716))+Math.floor(30.6001*(M+1))+d+B-1524.5 - lng/(15*24);
+  function sun(jd){
+    const D=jd-2451545.0, g=(357.529+0.98560028*D)%360, q=(280.459+0.98564736*D)%360;
+    const L=(q+1.915*Math.sin(g*rad)+0.020*Math.sin(2*g*rad))%360, e=23.439-0.00000036*D;
+    let RA=Math.atan2(Math.cos(e*rad)*Math.sin(L*rad),Math.cos(L*rad))*deg/15; RA=(RA%24+24)%24;
+    const decl=Math.asin(Math.sin(e*rad)*Math.sin(L*rad))*deg;
+    let eqt=q/15-RA; eqt=((eqt+12)%24+24)%24-12; return {decl,eqt};
+  }
+  const noonAt=t=>{const s=sun(jDate+t/24);return 12-s.eqt;};
+  const angleTime=(alt,t,dir)=>{const s=sun(jDate+t/24);const n=12-s.eqt;
+    const h=Math.acos((Math.sin(alt*rad)-Math.sin(s.decl*rad)*Math.sin(lat*rad))/(Math.cos(s.decl*rad)*Math.cos(lat*rad)))*deg/15;
+    return n+dir*h;};
+  const asrAlt=t=>{const s=sun(jDate+t/24);return Math.atan(1/(1+Math.tan(Math.abs(lat-s.decl)*rad)))*deg;};
+  let t={fajr:5,sunrise:6,dhuhr:12,asr:13,maghrib:18};
+  for(let i=0;i<2;i++){t={fajr:angleTime(-18.5,t.fajr,-1),sunrise:angleTime(-0.833,t.sunrise,-1),dhuhr:noonAt(t.dhuhr),asr:angleTime(asrAlt(t.asr),t.asr,1),maghrib:angleTime(-0.833,t.maghrib,1)};}
+  const adj=tz-lng/15; const r={};for(const k in t) r[k]=t[k]+adj;
+  r.isha=r.maghrib+1.5; return r;
+}
+
+function dayTimes(day){   // تواريخ فعلية لكل وقت في يوم معيّن
+  const p = prayerTimes(day, LAT, LON, 3);
+  if(hijri(day).m===9) p.isha = p.maghrib + 2;        // رمضان: العشاء بعد المغرب بساعتين
+  const out={};
+  for(const k of ["fajr","sunrise","dhuhr","asr","maghrib","isha"])
+    out[k] = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, Math.round(p[k]*60) + ADJ[k]);
+  return out;
+}
+const hm = d => { let h=d.getHours()%12||12; return h+":"+String(d.getMinutes()).padStart(2,"0"); };
+const ap = d => d.getHours()<12 ? "AM" : "PM";
+function cdStr(ms){ const s=Math.max(0,Math.ceil(ms/1000)), H=Math.floor(s/3600), M=Math.floor(s%3600/60), S=s%60;
+  return (H? H+":"+String(M).padStart(2,"0") : String(M)) + ":" + String(S).padStart(2,"0"); }
+function renderPrayer(){
+  const now=new Date(), today=midnight(now);
+  const T=dayTimes(today);
+  const order=["fajr","dhuhr","asr","maghrib","isha"];
+  let cur=null, dayRef=T, phase="adhan";
+  for(const k of order){
+    const iq=new Date(T[k].getTime()+IQAMA[k]*60000);
+    if(now < T[k]){ cur=k; phase="adhan"; break; }
+    if(now < iq){ cur=k; phase="iqama"; break; }
+  }
+  if(!cur){ dayRef=dayTimes(new Date(today.getTime()+DAY+3600e3)); cur="fajr"; phase="adhan"; }
+  const isFri = (cur==="dhuhr" && now.getDay()===5);
+  const name = isFri ? "الجمعة" : P_AR[cur], nameEn = isFri ? "Jumu'ah" : P_EN[cur];
+  const adhan = dayRef[cur], iqama = new Date(adhan.getTime()+IQAMA[cur]*60000);
+  const target = phase==="adhan" ? adhan : iqama;
+  $("pray").classList.toggle("iqama", phase==="iqama");
+  const strip = ["fajr","sunrise","dhuhr","asr","maghrib","isha"].map(k=>{
+    const t=T[k], cls = (k===cur && dayRef===T) ? "next" : (t<now && !(k===cur) ? "past" : "");
+    const nm = (k==="dhuhr" && now.getDay()===5) ? "الجمعة" : P_AR[k];
+    return `<div class="${cls}"><i>${nm}</i><s>${hm(t)}</s></div>`;
+  }).join("");
+  $("pray").innerHTML = `
+    <div class="lbl"><span>${phase==="adhan" ? "الصلاة القادمة" : "حان وقت الصلاة"}</span><span class="en">${phase==="adhan"?"Next prayer":"Prayer time"}</span></div>
+    <div class="nm"><b>${name}</b><span class="en">${nameEn}</span></div>
+    <div class="lbl" style="font-size:2.6vh;color:var(--text)"><span>${phase==="adhan" ? "متبقي للأذان" : "متبقي للإقامة"}</span><span class="en" style="color:var(--muted)">${phase==="adhan"?"Until Adhan":"Until Iqama"}</span></div>
+    <div class="cd">${cdStr(target-now)}</div>
+    <div class="sub">الأذان <em class="en">${hm(adhan)} ${ap(adhan)}</em> · الإقامة <em class="en">${hm(iqama)} ${ap(iqama)}</em></div>
+    <div class="strip">${strip}</div>`;
+}
+
+
+/* ================= الأذان ================= */
+/* ملفات الصوت توضع بجانب الصفحة على التلفزيون: adhan.mp3 (وadhan_fajr.mp3 للفجر إن وُجد) */
+const ADHAN_ON = true;
+const adh = new Audio(); adh.preload = "auto";
+let adhanBusy = false, adhanPrayer = null, quranWasOn = false;
+function playAdhan(k){
+  adhanBusy = true; adhanPrayer = k;
+  quranWasOn = qWant ? "yt" : (fajrMode && !qa.paused ? "mp3" : false);
+  if(quranWasOn==="yt" && ytReady) yt.pauseVideo(); if(quranWasOn==="mp3") qa.pause();
+  adh.src = (k==="fajr") ? "adhan_fajr.mp3" : "adhan.mp3";
+  adh.play().catch(()=>adhanDone());
+}
+function adhanDone(){
+  const k = adhanPrayer; adhanBusy = false; adhanPrayer = null;
+  if(k==="fajr" && !fajrMode && ls.get("fajrDone","")!==new Date().toDateString()){ ls.set("fajrDone",new Date().toDateString()); fajrStart(); return; }
+  if(quranWasOn==="yt" && qWant && ytReady) yt.playVideo(); if(quranWasOn==="mp3" && fajrMode) qa.play().catch(()=>{});
+}
+adh.addEventListener("ended", adhanDone);
+adh.addEventListener("error", ()=>{ if(adh.src.includes("adhan_fajr")){ adh.src="adhan.mp3"; adh.play().catch(()=>adhanDone()); } else adhanDone(); });
+function adhanCheck(){
+  if(!ADHAN_ON || adhanBusy) return;
+  const now=new Date(), T=dayTimes(midnight(now)), key=now.toDateString();
+  for(const k of ["fajr","dhuhr","asr","maghrib","isha"]){
+    const diff = now - T[k];
+    if(diff>=0 && diff<120000 && ls.get("adhan_"+k,"")!==key){ ls.set("adhan_"+k,key); playAdhan(k); break; }
+  }
+}
+
+/* ================= الساعة والتاريخ ================= */
+function tick(){
+  const d = new Date();
+  let h = d.getHours(), m = String(d.getMinutes()).padStart(2,"0");
+  const ap = h<12 ? "AM" : "PM"; h = h%12 || 12;
+  $("clock").firstChild.nodeValue = `${h}:${m}`;
+  $("ampm").textContent = ap;
+  const hj=hijri(d);
+  $("dayAr").textContent = WD_AR[d.getDay()];
+  $("dayEn").textContent = WD_EN[d.getDay()];
+  $("hijriAr").textContent = `${hj.d} ${HM_AR[hj.m-1]} ${hj.y} هـ`;
+  $("hijriEn").textContent = `${HM_EN[hj.m-1]} ${hj.d}, ${hj.y} AH`;
+  $("gregAr").textContent = gAr(d);
+  $("gregEn").textContent = `${d.getDate()} ${GM_EN[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/* ================= الطقس (Open-Meteo، بدون مفتاح) ================= */
+const WMO = {0:["☀️","صحو","Clear"],1:["🌤️","صحو غالباً","Mostly clear"],2:["⛅","غائم جزئياً","Partly cloudy"],3:["☁️","غائم","Overcast"],
+  45:["🌫️","ضباب","Fog"],48:["🌫️","ضباب","Fog"],51:["🌦️","رذاذ","Drizzle"],53:["🌦️","رذاذ","Drizzle"],55:["🌦️","رذاذ","Drizzle"],
+  61:["🌧️","مطر خفيف","Light rain"],63:["🌧️","مطر","Rain"],65:["🌧️","مطر غزير","Heavy rain"],80:["🌦️","زخات","Showers"],
+  81:["🌧️","زخات","Showers"],82:["⛈️","زخات غزيرة","Heavy showers"],95:["⛈️","عاصفة رعدية","Thunderstorm"],96:["⛈️","عاصفة رعدية","Thunderstorm"],99:["⛈️","عاصفة رعدية","Thunderstorm"]};
+function showWeather(t,code,hi,lo,src){
+  const w = WMO[code] || ["🌡️","",""];
+  $("wTemp").textContent = Math.round(t) + "°";
+  $("wIcon").textContent = w[0];
+  $("wDesc").textContent = w[1] ? `${w[1]} · ${w[2]}` : "";
+  $("wMinMax").textContent = (hi!=null) ? `H ${Math.round(hi)}°  ·  L ${Math.round(lo)}°` : "";
+}
+/* wttr.in codes -> أقرب رمز WMO */
+function wttrToWmo(c){c=+c;if(c===113)return 0;if(c===116)return 2;if(c===119||c===122)return 3;if(c===143||c===248||c===260)return 45;
+  if([176,263,266,293,296,353].includes(c))return 61;if([299,302,305,308,356,359].includes(c))return 63;if([200,386,389].includes(c))return 95;return 3;}
+async function weather(){
+  const ctl = () => { const a=new AbortController(); setTimeout(()=>a.abort(),10000); return a.signal; };
+  try{
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FRiyadh&forecast_days=1`,{signal:ctl()});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    const v = {t:j.current.temperature_2m, c:j.current.weather_code, hi:j.daily.temperature_2m_max[0], lo:j.daily.temperature_2m_min[0]};
+    showWeather(v.t,v.c,v.hi,v.lo); try{localStorage.setItem("wx",JSON.stringify({...v,at:Date.now()}))}catch(e){}
+    return;
+  }catch(e){}
+  try{
+    const r = await fetch(`https://wttr.in/${LAT},${LON}?format=j1`,{signal:ctl()});
+    if(!r.ok) throw 0;
+    const j = await r.json(); const c=j.current_condition[0], d=j.weather[0];
+    const v = {t:+c.temp_C, c:wttrToWmo(c.weatherCode), hi:+d.maxtempC, lo:+d.mintempC};
+    showWeather(v.t,v.c,v.hi,v.lo); try{localStorage.setItem("wx",JSON.stringify({...v,at:Date.now()}))}catch(e){}
+    return;
+  }catch(e){}
+  // آخر قراءة محفوظة (أقل من 6 ساعات)
+  try{ const v=JSON.parse(localStorage.getItem("wx")); if(v && Date.now()-v.at<6*3600e3){ showWeather(v.t,v.c,v.hi,v.lo); return; } }catch(e){}
+  $("wTemp").textContent = ""; $("wIcon").textContent = ""; $("wDesc").textContent = "الطقس غير متاح — تحقق من الإنترنت";
+  setTimeout(weather, 60*1000); // إعادة المحاولة بعد دقيقة
+}
+
+/* ================= حماية الشاشة من الاحتراق: إزاحة بسيطة كل دقيقتين ================= */
+function drift(){const x=(Math.random()*2-1)*1.2, y=(Math.random()*2-1)*1.2; $("stage").style.transform=`translate(${x}vw,${y}vh)`;}
+
+
+/* ================= القرآن الكريم · محمد مسعد (يوتيوب) ================= */
+/* الريموت: OK = تشغيل/إيقاف · يمين/يسار = السورة التالية/السابقة */
+const RECITER = "محمد مسعد";
+const PLAYLIST = [
+  {ar:"سورة القصص",  id:"59guIfCKTMQ"},
+  {ar:"سورة النمل",  id:"UhaN1ZR3D6c"},
+  {ar:"سورة يوسف",   id:"FLnd8NYpUKg"},
+  {ar:"راحة نفسية",  id:"0dAwXrtS2aM"},
+  {ar:"سورة البقرة", id:"PEl4A2tP6-8"},
+  {ar:"سورة ص",      id:"n0IzeCjI4dk"},
+  {ar:"سورة طه",     id:"-enlrLEwFvI"},
+  {ar:"سورة يونس",   id:"_2mQYokb66w"},
+  {ar:"سورة الكهف",  id:"5WLqRTKN6OU"},
+  {ar:"سورة مريم",   id:"LZaeprukFeY"},
+  {ar:"سورة الرحمن", id:"ISMBTYAko_Y"},
+];
+const YT_ERR = {2:"رابط غير صالح", 5:"خطأ في المشغّل", 100:"المقطع محذوف أو خاص", 101:"الناشر يمنع التشغيل خارج يوتيوب", 150:"الناشر يمنع التشغيل خارج يوتيوب", 153:"يوتيوب يرفض التشغيل من ملف محلي"};
+
+const ls = { get(k,d){ try{ const v=localStorage.getItem(k); return v===null?d:JSON.parse(v); }catch(e){ return d; } },
+             set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} } };
+let idx = ls.get("ytIdx",0) % PLAYLIST.length;
+let qWant = false, fails = 0, errStreak = 0, yt = null, ytReady = false, ytLoaded = -1;
+const qa = new Audio(); qa.preload = "auto";          // مستخدم لتلاوة الفجر فقط
+
+function qUI(state, msg){ // off | loading | on | err
+  $("quran").classList.toggle("on", state==="on");
+  $("qTitle").textContent = "القرآن الكريم · " + RECITER;
+  const s = PLAYLIST[idx].ar;
+  $("qHint").textContent = {off: s+" · OK للتشغيل · ◀ ▶ السورة", loading: s+" · جاري التشغيل…",
+                            on: s+" · OK للإيقاف", err: s+" · " + (msg||"تعذّر التشغيل")}[state];
+}
+window.onYouTubeIframeAPIReady = function(){
+  yt = new YT.Player("yt", { width:320, height:180,
+    playerVars:{autoplay:0, controls:0, playsinline:1, rel:0},
+    events:{
+      onReady: ()=>{ ytReady=true; if(ls.get("quranOn",0)) qPlay(); },
+      onStateChange: e=>{
+        if(e.data===YT.PlayerState.PLAYING){ errStreak=0; if(!fajrMode) qUI("on"); }
+        if(e.data===YT.PlayerState.ENDED && qWant && !fajrMode) step(1);
+      },
+      onError: e=>{
+        errStreak++; qUI("err", (YT_ERR[e.data]||"خطأ") + " (رمز " + e.data + ")");
+        if(errStreak < PLAYLIST.length && qWant) setTimeout(()=>{ if(qWant) step(1); }, 6000);
+        else { qWant=false; ls.set("quranOn",0); }
+      }
+    }});
+};
+(function(){ const s=document.createElement("script"); s.src="https://www.youtube.com/iframe_api";
+  s.onerror=()=>qUI("err","تعذّر تحميل يوتيوب — تحقق من الإنترنت"); document.head.appendChild(s); })();
+
+function ytPlayCurrent(){
+  if(!ytReady){ qUI("loading"); setTimeout(()=>{ if(qWant && !ytReady) qUI("err","يوتيوب لم يتحمّل"); }, 10000); return; }
+  if(ytLoaded!==idx){ yt.loadVideoById(PLAYLIST[idx].id); ytLoaded=idx; } else yt.playVideo();
+}
+function qPlay(){ if(fajrMode) fajrEnd(); qWant=true; ls.set("quranOn",1); qUI("loading"); ytPlayCurrent(); }
+function qStop(){ qWant=false; ls.set("quranOn",0); if(ytReady) yt.pauseVideo(); qUI("off"); }
+function qToggle(){ if(adhanBusy){ adh.pause(); quranWasOn=false; adhanBusy=false; adhanPrayer=null; return; } if(fajrMode){ fajrEnd(); return; } qWant ? qStop() : qPlay(); }
+function step(d){ idx=(idx+d+PLAYLIST.length)%PLAYLIST.length; ls.set("ytIdx",idx); if(qWant){ qUI("loading"); ytPlayCurrent(); } else qUI("off"); }
+function switchReciter(d){ if(fajrMode) fajrEnd(); step(d); }
+
+/* تلاوة الفجر (mp3) */
+qa.addEventListener("playing", ()=>{ fails=0; });
+qa.addEventListener("ended",   ()=>{ if(fajrMode) fajrEnd(); });
+qa.addEventListener("error",   ()=>{ if(fajrMode){ fails++; if(fails<4) setTimeout(()=>fajrMode&&fajrStart(),8000); else fajrEnd(); } });
+
+document.addEventListener("keydown", e=>{
+  const k=e.key, c=e.keyCode;
+  if(["Enter"," ","MediaPlayPause","MediaPlay","MediaStop"].includes(k) || [13,23,85,179].includes(c)){ e.preventDefault(); qToggle(); }
+  else if(k==="ArrowRight"||c===22){ e.preventDefault(); switchReciter(1); }
+  else if(k==="ArrowLeft" ||c===21){ e.preventDefault(); switchReciter(-1); }
+});
+$("quran").addEventListener("click", qToggle);
+
+/* ================= جدولة: سورة البقرة كل يوم عند الفجر ================= */
+const FAJR_PLAN = { reciter:"ماهر المعيقلي", url:"https://server12.mp3quran.net/maher/", sura:2, window:20 }; // يبدأ خلال 20 دقيقة من الأذان
+function fajrTime(date, lat, lng, tz, angle){
+  const rad=Math.PI/180, deg=180/Math.PI;
+  const y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
+  const A=Math.floor((14-m)/12), Y=y+4800-A, M=m+12*A-3;
+  const JD=d+Math.floor((153*M+2)/5)+365*Y+Math.floor(Y/4)-Math.floor(Y/100)+Math.floor(Y/400)-32045 - lng/360; // JDN at noon approx
+  const D=JD-2451545.0;
+  const g=(357.529+0.98560028*D)%360, q=(280.459+0.98564736*D)%360;
+  const L=(q+1.915*Math.sin(g*rad)+0.020*Math.sin(2*g*rad))%360;
+  const e=23.439-0.00000036*D;
+  let RA=Math.atan2(Math.cos(e*rad)*Math.sin(L*rad),Math.cos(L*rad))*deg/15; RA=(RA+24)%24;
+  const decl=Math.asin(Math.sin(e*rad)*Math.sin(L*rad))*deg;
+  let EqT=q/15-RA; EqT=((EqT+12)%24+24)%24-12;
+  const noon=12+tz-lng/15-EqT;
+  const T=Math.acos((-Math.sin(angle*rad)-Math.sin(decl*rad)*Math.sin(lat*rad))/(Math.cos(decl*rad)*Math.cos(lat*rad)))*deg/15;
+  return noon-T;
+}
+
+let fajrMode = false;
+function todayFajr(){ return dayTimes(midnight(new Date())).fajr; }
+function fajrCheck(){
+  const now=new Date(), f=todayFajr(), key=now.toDateString();
+  const fs=f.getHours()+":"+String(f.getMinutes()).padStart(2,"0");
+  $("qFajr").textContent = "الفجر "+fs+" · البقرة بصوت المعيقلي";
+  if(!fajrMode && !adhanBusy && ls.get("fajrDone","")!==key && now-f>=(ADHAN_ON?5*60000:0) && now-f < FAJR_PLAN.window*60000){
+    ls.set("fajrDone", key); fajrStart();
+  }
+}
+function fajrStart(){
+  if(ytReady) yt.pauseVideo(); qWant=false;
+  fajrMode=true; fails=0; qa.pause();
+  $("quran").classList.add("on");
+  $("qTitle").textContent = "القرآن الكريم · " + FAJR_PLAN.reciter;
+  $("qHint").textContent = "سورة البقرة · تلاوة الفجر · OK للإيقاف";
+  qa.src = FAJR_PLAN.url + "002.mp3"; qa.play().catch(()=>{});
+}
+function fajrEnd(){ fajrMode=false; qa.pause(); qUI("off"); }
+
+qUI("off");
+fajrCheck(); setInterval(fajrCheck, 30000);
+
+tick(); renderEvents(); weather();
+setInterval(tick, 1000);
+renderPrayer(); setInterval(renderPrayer, 1000);
+setInterval(adhanCheck, 5000);
+setInterval(renderEvents, 10*60*1000);
+renderCard(); setInterval(renderCard, 10*60*1000);
+setInterval(weather, 15*60*1000);
+setInterval(drift, 2*60*1000);
+
+</script>
+</body>
+</html>
