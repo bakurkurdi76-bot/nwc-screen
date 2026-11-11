@@ -352,15 +352,15 @@ const adh = new Audio(); adh.preload = "auto";
 let adhanBusy = false, adhanPrayer = null, quranWasOn = false;
 function playAdhan(k){
   adhanBusy = true; adhanPrayer = k;
-  quranWasOn = qWant ? "yt" : (fajrMode && !qa.paused ? "mp3" : false);
-  if(quranWasOn==="yt" && ytReady) yt.pauseVideo(); if(quranWasOn==="mp3") qa.pause();
+  quranWasOn = (qWant || fajrMode) && ytReady;
+  if(quranWasOn) yt.pauseVideo();
   adh.src = (k==="fajr") ? "adhan_fajr.mp3" : "adhan.mp3";
   adh.play().catch(()=>adhanDone());
 }
 function adhanDone(){
   const k = adhanPrayer; adhanBusy = false; adhanPrayer = null;
   if(k==="fajr" && !fajrMode && ls.get("fajrDone","")!==new Date().toDateString()){ ls.set("fajrDone",new Date().toDateString()); fajrStart(); return; }
-  if(quranWasOn==="yt" && qWant && ytReady) yt.playVideo(); if(quranWasOn==="mp3" && fajrMode) qa.play().catch(()=>{});
+  if(quranWasOn && (qWant || fajrMode) && ytReady) yt.playVideo();
 }
 adh.addEventListener("ended", adhanDone);
 adh.addEventListener("error", ()=>{ if(adh.src.includes("adhan_fajr")){ adh.src="adhan.mp3"; adh.play().catch(()=>adhanDone()); } else adhanDone(); });
@@ -454,7 +454,6 @@ const ls = { get(k,d){ try{ const v=localStorage.getItem(k); return v===null?d:J
              set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} } };
 let idx = ls.get("ytIdx",0) % PLAYLIST.length;
 let qWant = false, fails = 0, errStreak = 0, yt = null, ytReady = false, ytLoaded = -1;
-const qa = new Audio(); qa.preload = "auto";          // مستخدم لتلاوة الفجر فقط
 
 function qUI(state, msg){ // off | loading | on | err
   $("quran").classList.toggle("on", state==="on");
@@ -470,9 +469,11 @@ window.onYouTubeIframeAPIReady = function(){
       onReady: ()=>{ ytReady=true; if(ls.get("quranOn",0)) qPlay(); },
       onStateChange: e=>{
         if(e.data===YT.PlayerState.PLAYING){ errStreak=0; if(!fajrMode) qUI("on"); }
+        if(e.data===YT.PlayerState.ENDED && fajrMode){ fajrEnd(); return; }
         if(e.data===YT.PlayerState.ENDED && qWant && !fajrMode) step(1);
       },
       onError: e=>{
+        if(fajrMode){ fajrMode=false; qUI("err","تلاوة الفجر: " + (YT_ERR[e.data]||"خطأ") + " (رمز " + e.data + ")"); return; }
         errStreak++; qUI("err", (YT_ERR[e.data]||"خطأ") + " (رمز " + e.data + ")");
         if(errStreak < PLAYLIST.length && qWant) setTimeout(()=>{ if(qWant) step(1); }, 6000);
         else { qWant=false; ls.set("quranOn",0); }
@@ -492,10 +493,6 @@ function qToggle(){ if(adhanBusy){ adh.pause(); quranWasOn=false; adhanBusy=fals
 function step(d){ idx=(idx+d+PLAYLIST.length)%PLAYLIST.length; ls.set("ytIdx",idx); if(qWant){ qUI("loading"); ytPlayCurrent(); } else qUI("off"); }
 function switchReciter(d){ if(fajrMode) fajrEnd(); step(d); }
 
-/* تلاوة الفجر (mp3) */
-qa.addEventListener("playing", ()=>{ fails=0; });
-qa.addEventListener("ended",   ()=>{ if(fajrMode) fajrEnd(); });
-qa.addEventListener("error",   ()=>{ if(fajrMode){ fails++; if(fails<4) setTimeout(()=>fajrMode&&fajrStart(),8000); else fajrEnd(); } });
 
 document.addEventListener("keydown", e=>{
   const k=e.key, c=e.keyCode;
@@ -506,7 +503,7 @@ document.addEventListener("keydown", e=>{
 $("quran").addEventListener("click", qToggle);
 
 /* ================= جدولة: سورة البقرة كل يوم عند الفجر ================= */
-const FAJR_PLAN = { reciter:"ماهر المعيقلي", url:"https://server12.mp3quran.net/maher/", sura:2, window:20 }; // يبدأ خلال 20 دقيقة من الأذان
+const FAJR_PLAN = { reciter:"محمد مسعد", yt:"PEl4A2tP6-8", window:20 }; // يبدأ خلال 20 دقيقة من الأذان
 function fajrTime(date, lat, lng, tz, angle){
   const rad=Math.PI/180, deg=180/Math.PI;
   const y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
@@ -529,20 +526,20 @@ function todayFajr(){ return dayTimes(midnight(new Date())).fajr; }
 function fajrCheck(){
   const now=new Date(), f=todayFajr(), key=now.toDateString();
   const fs=f.getHours()+":"+String(f.getMinutes()).padStart(2,"0");
-  $("qFajr").textContent = "الفجر "+fs+" · البقرة بصوت المعيقلي";
+  $("qFajr").textContent = "الفجر "+fs+" · البقرة بصوت محمد مسعد";
   if(!fajrMode && !adhanBusy && ls.get("fajrDone","")!==key && now-f>=(ADHAN_ON?5*60000:0) && now-f < FAJR_PLAN.window*60000){
     ls.set("fajrDone", key); fajrStart();
   }
 }
 function fajrStart(){
-  if(ytReady) yt.pauseVideo(); qWant=false;
-  fajrMode=true; fails=0; qa.pause();
+  if(!ytReady){ if(!fajrStart._w){ fajrStart._w=setTimeout(()=>{ fajrStart._w=null; fajrStart(); },5000);} return; }
+  qWant=false; fajrMode=true; errStreak=0;
   $("quran").classList.add("on");
   $("qTitle").textContent = "القرآن الكريم · " + FAJR_PLAN.reciter;
   $("qHint").textContent = "سورة البقرة · تلاوة الفجر · OK للإيقاف";
-  qa.src = FAJR_PLAN.url + "002.mp3"; qa.play().catch(()=>{});
+  yt.loadVideoById(FAJR_PLAN.yt); ytLoaded = -1;      // التشغيل العادي بعدها يعيد تحميل سورته
 }
-function fajrEnd(){ fajrMode=false; qa.pause(); qUI("off"); }
+function fajrEnd(){ fajrMode=false; if(ytReady) yt.pauseVideo(); qUI("off"); }
 
 qUI("off");
 fajrCheck(); setInterval(fajrCheck, 30000);
