@@ -347,7 +347,7 @@ function renderPrayer(){
 
 /* ================= الأذان ================= */
 /* ملفات الصوت توضع بجانب الصفحة على التلفزيون: adhan.mp3 (وadhan_fajr.mp3 للفجر إن وُجد) */
-const SILENT = /[?&]silent\b/.test(location.search);   // رابط بـ ?silent : بدون أذان ولا تلاوة الفجر التلقائية
+const SILENT = /[?&]silent\b/.test(location.search);   // رابط بـ ?silent : بدون أذان ولا قرآن (غرفة الاجتماعات)
 const ADHAN_ON = !SILENT;
 const adh = new Audio(); adh.preload = "auto";
 let adhanBusy = false, adhanPrayer = null, quranWasOn = false;
@@ -481,7 +481,8 @@ window.onYouTubeIframeAPIReady = function(){
       }
     }});
 };
-(function(){ const s=document.createElement("script"); s.src="https://www.youtube.com/iframe_api";
+if(SILENT) $("quran").style.display="none";      // الوضع الصامت: بدون قرآن ولا يوتيوب
+if(!SILENT) (function(){ const s=document.createElement("script"); s.src="https://www.youtube.com/iframe_api";
   s.onerror=()=>qUI("err","تعذّر تحميل يوتيوب — تحقق من الإنترنت"); document.head.appendChild(s); })();
 
 function ytPlayCurrent(){
@@ -496,6 +497,7 @@ function switchReciter(d){ if(fajrMode) fajrEnd(); step(d); }
 
 
 document.addEventListener("keydown", e=>{
+  if(SILENT) return;
   const k=e.key, c=e.keyCode;
   if(["Enter"," ","MediaPlayPause","MediaPlay","MediaStop"].includes(k) || [13,23,85,179].includes(c)){ e.preventDefault(); qToggle(); }
   else if(k==="ArrowRight"||c===22){ e.preventDefault(); switchReciter(1); }
