@@ -385,6 +385,18 @@ function adhanCheck(){
   }
 }
 
+
+/* ================= تحديث تلقائي: يعيد تحميل الصفحة إذا نُشرت نسخة جديدة ================= */
+const BUILD = "20261112075616";
+async function checkUpdate(){
+  try{
+    const r = await fetch(location.pathname + "?v=" + Date.now(), {cache:"no-store"});
+    const t = await r.text(); const m = t.match(/const BUILD = "(\d+)"/);
+    if(m && m[1] !== BUILD) location.reload();
+  }catch(e){}
+}
+setInterval(checkUpdate, 5*60*1000);
+
 /* ================= الساعة والتاريخ ================= */
 function tick(){
   const d = new Date();
