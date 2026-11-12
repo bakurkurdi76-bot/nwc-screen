@@ -347,7 +347,8 @@ function renderPrayer(){
 
 /* ================= الأذان ================= */
 /* ملفات الصوت توضع بجانب الصفحة على التلفزيون: adhan.mp3 (وadhan_fajr.mp3 للفجر إن وُجد) */
-const ADHAN_ON = true;
+const SILENT = /[?&]silent\b/.test(location.search);   // رابط بـ ?silent : بدون أذان ولا تلاوة الفجر التلقائية
+const ADHAN_ON = !SILENT;
 const adh = new Audio(); adh.preload = "auto";
 let adhanBusy = false, adhanPrayer = null, quranWasOn = false;
 function playAdhan(k){
@@ -527,6 +528,7 @@ function fajrCheck(){
   const now=new Date(), f=todayFajr(), key=now.toDateString();
   const fs=f.getHours()+":"+String(f.getMinutes()).padStart(2,"0");
   $("qFajr").textContent = "الفجر "+fs+" · البقرة بصوت محمد مسعد";
+  if(SILENT){ $("qFajr").textContent = "الفجر "+fs+" · الوضع الصامت"; return; }
   if(!fajrMode && !adhanBusy && ls.get("fajrDone","")!==key && now-f>=(ADHAN_ON?5*60000:0) && now-f < FAJR_PLAN.window*60000){
     ls.set("fajrDone", key); fajrStart();
   }
