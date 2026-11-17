@@ -1,0 +1,241 @@
+{
+ "demo": true,
+ "updated": "2026-11-17",
+ "users": [
+  {
+   "id": "u1",
+   "name": "بكر عماد كردي",
+   "email": "bakr@example.com",
+   "company": "nwc",
+   "companies": [
+    "nwc",
+    "tex",
+    "edico"
+   ],
+   "role": "admin",
+   "title": "مدير إدارة جودة المياه والمختبرات",
+   "section": "الإدارة",
+   "manager": "",
+   "category": "manager",
+   "active": true
+  },
+  {
+   "id": "u2",
+   "name": "بدر عبدالعزيز شقرون",
+   "email": "badr@example.com",
+   "company": "nwc",
+   "companies": [
+    "nwc",
+    "tex"
+   ],
+   "role": "head",
+   "title": "رئيس قسم الكيمياء",
+   "section": "قسم الكيمياء",
+   "manager": "bakr@example.com",
+   "category": "manager",
+   "active": true
+  },
+  {
+   "id": "u3",
+   "name": "عبدالإله محمد مشمنق",
+   "email": "abdulelah@example.com",
+   "company": "nwc",
+   "companies": [
+    "nwc",
+    "edico"
+   ],
+   "role": "head",
+   "title": "رئيس قسم مختبر الخدمات البيئية",
+   "section": "قسم الخدمات البيئية",
+   "manager": "bakr@example.com",
+   "category": "manager",
+   "active": true
+  },
+  {
+   "id": "u4",
+   "name": "سلطان محمود السيسي",
+   "email": "sultan@example.com",
+   "company": "nwc",
+   "companies": [
+    "nwc",
+    "tex",
+    "edico"
+   ],
+   "role": "head",
+   "title": "رئيس قسم الدعم",
+   "section": "قسم الدعم",
+   "manager": "bakr@example.com",
+   "category": "manager",
+   "active": true
+  },
+  {
+   "id": "u5",
+   "name": "مفوّض الأهداف (تجريبي)",
+   "email": "delegate@example.com",
+   "company": "nwc",
+   "companies": [
+    "nwc",
+    "tex",
+    "edico"
+   ],
+   "role": "delegate",
+   "title": "منسق الأداء",
+   "section": "الإدارة",
+   "manager": "bakr@example.com",
+   "category": "employee",
+   "active": true
+  },
+  {
+   "id": "u6",
+   "name": "موظف كيمياء (تجريبي)",
+   "email": "chem1@example.com",
+   "company": "nwc",
+   "companies": [
+    "nwc",
+    "tex"
+   ],
+   "role": "employee",
+   "title": "أخصائي كيمياء",
+   "section": "قسم الكيمياء",
+   "manager": "badr@example.com",
+   "category": "employee",
+   "active": true
+  },
+  {
+   "id": "u7",
+   "name": "موظف خدمات بيئية (تجريبي)",
+   "email": "env1@example.com",
+   "company": "nwc",
+   "companies": [
+    "nwc",
+    "edico"
+   ],
+   "role": "employee",
+   "title": "أخصائي خدمات بيئية",
+   "section": "قسم الخدمات البيئية",
+   "manager": "abdulelah@example.com",
+   "category": "employee",
+   "active": true
+  },
+  {
+   "id": "u8",
+   "name": "رائد صديق",
+   "email": "raed@example.com",
+   "company": "tex",
+   "companies": [
+    "tex"
+   ],
+   "role": "contract_manager",
+   "title": "مدير عقد",
+   "section": "عقد خبراء التقنية",
+   "manager": "badr@example.com",
+   "category": "manager",
+   "active": true
+  },
+  {
+   "id": "u9",
+   "name": "شعبان",
+   "email": "shaaban@example.com",
+   "company": "tex",
+   "companies": [
+    "tex"
+   ],
+   "role": "contract_manager",
+   "title": "مدير عقد",
+   "section": "عقد خبراء التقنية",
+   "manager": "badr@example.com",
+   "category": "manager",
+   "active": true
+  },
+  {
+   "id": "u10",
+   "name": "فني مختبر — خبراء (تجريبي)",
+   "email": "tex1@example.com",
+   "company": "tex",
+   "companies": [
+    "tex"
+   ],
+   "role": "employee",
+   "title": "فني مختبر كيمياء",
+   "section": "عقد خبراء التقنية",
+   "manager": "raed@example.com",
+   "category": "employee",
+   "active": true
+  },
+  {
+   "id": "u11",
+   "name": "فني سحب عينات — خبراء (تجريبي)",
+   "email": "tex2@example.com",
+   "company": "tex",
+   "companies": [
+    "tex"
+   ],
+   "role": "employee",
+   "title": "فني سحب عينات",
+   "section": "عقد خبراء التقنية",
+   "manager": "raed@example.com",
+   "category": "employee",
+   "active": true
+  },
+  {
+   "id": "u12",
+   "name": "عبدالعزيز قمصاني",
+   "email": "qamsani@example.com",
+   "company": "edico",
+   "companies": [
+    "edico"
+   ],
+   "role": "contract_manager",
+   "title": "مدير عقد",
+   "section": "عقد اديكو",
+   "manager": "abdulelah@example.com",
+   "category": "manager",
+   "active": true
+  },
+  {
+   "id": "u13",
+   "name": "محمد الجرايحي",
+   "email": "jarayhi@example.com",
+   "company": "edico",
+   "companies": [
+    "edico"
+   ],
+   "role": "contract_manager",
+   "title": "مدير عقد",
+   "section": "عقد اديكو",
+   "manager": "abdulelah@example.com",
+   "category": "manager",
+   "active": true
+  },
+  {
+   "id": "u14",
+   "name": "فني مختبر بيئي — اديكو (تجريبي)",
+   "email": "ed1@example.com",
+   "company": "edico",
+   "companies": [
+    "edico"
+   ],
+   "role": "employee",
+   "title": "فني مختبر خدمات بيئية",
+   "section": "عقد اديكو",
+   "manager": "qamsani@example.com",
+   "category": "employee",
+   "active": true
+  },
+  {
+   "id": "u15",
+   "name": "فني محطات — اديكو (تجريبي)",
+   "email": "ed2@example.com",
+   "company": "edico",
+   "companies": [
+    "edico"
+   ],
+   "role": "employee",
+   "title": "فني متابعة محطات",
+   "section": "عقد اديكو",
+   "manager": "qamsani@example.com",
+   "category": "employee",
+   "active": true
+  }
+ ]
+}

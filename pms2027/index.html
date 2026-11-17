@@ -336,35 +336,41 @@ function render(){
   charts.forEach(c=>{try{c.destroy()}catch(e){}});charts=[];
   applyTheme();const a=$('app');
   if(S.userId&&!U(S.userId)){S.userId=null}
-  if(!S.company)a.innerHTML=viewPicker();
-  else if(!S.userId)a.innerHTML=viewLogin();
+  const cu=S.userId?U(S.userId):null;
+  if(S.company&&cu&&!cu.companies.includes(S.company))S.company=null;
+  if(!cu||cu.active===false){S.userId=null;S.company=null;a.innerHTML=viewLogin()}
+  else if(!S.company)a.innerHTML=viewPicker(cu);
   else a.innerHTML=viewShell();
   pendingCharts.splice(0).forEach(f=>{try{f()}catch(e){console.warn(e)}});
 }
 const pendingCharts=[];
 function monoOf(co){const b=brand(co);return b.logo?`<img class="logo" src="${b.logo}" alt="${esc(b.name)}">`:`<div class="wordmark" style="border-color:${b.acc};color:${b.pri}">${esc(b.name.replace('شركة ','').trim())}<span style="color:${b.acc}">${esc(b.en)}</span></div>`}
 
-function viewPicker(){
+function viewPicker(u){
+  return `<div class="pick">
+   <div class="pill p-pri" style="margin-bottom:10px">دورة الأداء: ${fdate(state.settings.cycleStart)} – ${fdate(state.settings.cycleEnd)}</div>
+   <h1>مرحبًا ${esc(u.name)}</h1>
+   <div class="muted">اختر الشركة — تظهر لك الشركات المصرّح لك بها فقط</div>
+   <div class="cos" style="grid-template-columns:repeat(${u.companies.length},minmax(200px,260px))">${u.companies.map(k=>{const b=brand(k);return `<div class="co" onclick="App.pick('${k}')"><div class="band" style="background:linear-gradient(90deg,${b.pri},${b.acc})"></div>${monoOf(k)}<h3 style="color:${b.pri}">${esc(b.name)}</h3><div class="muted xs">${esc(b.en)}</div></div>`}).join('')}</div>
+   <button class="sec" style="margin-top:24px" onclick="App.logout()">تسجيل الخروج</button>
+  </div>`;
+}
+function viewLogin(){
+  const demo=REMOTE.demo?state.users.filter(u=>u.active!==false):[];
   return `<div class="pick">
    <div class="pill p-pri" style="margin-bottom:10px">دورة الأداء: ${fdate(state.settings.cycleStart)} – ${fdate(state.settings.cycleEnd)}</div>
    <h1>نظام إدارة الأداء 2027</h1>
    <div class="muted">إدارة جودة المياه والمختبرات — وحدة أعمال منطقة المدينة المنورة</div>
-   <div class="cos">${CO_KEYS.map(k=>{const b=brand(k);return `<div class="co" onclick="App.pick('${k}')"><div class="band" style="background:linear-gradient(90deg,${b.pri},${b.acc})"></div>${monoOf(k)}<h3 style="color:${b.pri}">${esc(b.name)}</h3><div class="muted xs">${esc(b.en)}</div></div>`}).join('')}</div>
-   <div class="muted xs" style="margin-top:28px">اختر الشركة للدخول — لكل شركة صفحاتها وهويتها، ولا يُقبل الدخول إلا على الشركة المسجلة لك</div>
+   <div class="row" style="justify-content:center;gap:28px;margin:22px 0 6px">${CO_KEYS.map(k=>`<div style="text-align:center;width:170px">${monoOf(k)}</div>`).join('')}</div>
+   <div class="card" style="width:min(420px,100%);margin-top:10px">
+    <label>البريد الإلكتروني</label><input id="em" type="email" dir="ltr" placeholder="name@company.com" onkeydown="if(event.key==='Enter')App.login()">
+    <div id="lerr"></div>
+    <button onclick="App.login()" style="width:100%;margin-top:12px">دخول</button>
+    <div class="xs muted" style="margin-top:8px">الدخول متاح فقط للبريد المسجّل والمصرّح له من إدارة النظام.</div>
+    ${demo.length?`<div class="hr"></div><details><summary class="sm muted" style="cursor:pointer">حسابات تجريبية (مرحلة التجربة فقط)</summary>
+    <div style="max-height:220px;overflow:auto;margin-top:8px">${demo.map(u=>`<div class="row between sm" style="padding:4px 0;border-bottom:1px solid var(--line)"><span>${esc(u.name)} <span class="muted xs">— ${ROLE_LBL[u.role]}</span></span><button class="ghost sm" onclick="$('em').value='${esc(u.email)}';App.login()">دخول</button></div>`).join('')}</div></details>`:''}
+   </div>
   </div>`;
-}
-function viewLogin(){
-  const b=brand(S.company);const demo=state.users.filter(u=>u.companies.includes(S.company)&&u.active!==false);
-  return `<div class="login"><div class="box">
-   <div style="text-align:center">${monoOf(S.company)}<h2 style="color:var(--pri)">${esc(b.name)}</h2><div class="muted sm">نظام إدارة الأداء 2027</div></div>
-   <label>البريد الإلكتروني</label><input id="em" type="email" placeholder="name@company.com" onkeydown="if(event.key==='Enter')App.login()">
-   <div id="lerr"></div>
-   <div class="row" style="margin-top:14px"><button onclick="App.login()" style="flex:1">دخول</button><button class="sec" onclick="App.pick(null)">تغيير الشركة</button></div>
-   <div class="hr"></div>
-   <details><summary class="sm muted" style="cursor:pointer">حسابات تجريبية (للنموذج الأولي فقط)</summary>
-   <div style="max-height:220px;overflow:auto;margin-top:8px">${demo.map(u=>`<div class="row between sm" style="padding:4px 0;border-bottom:1px solid var(--line)"><span>${esc(u.name)} <span class="muted xs">— ${ROLE_LBL[u.role]} · ${esc(brand(u.company).name)}</span></span><button class="ghost sm" onclick="$('em').value='${esc(u.email)}';App.login()">دخول</button></div>`).join('')}</div></details>
-   <div class="warnbox" style="margin-top:12px">نموذج أولي: الدخول هنا بالبريد فقط دون تحقق. في النسخة التشغيلية يكون الدخول ببريد الشركة مع رمز تحقق (OTP) أو حساب Microsoft.</div>
-  </div></div>`;
 }
 function navItems(u){
   const co=S.company,scope=scopeUsers(u,co),rv=pendingReviews(u).length;
@@ -697,6 +703,7 @@ function roleKey(s){s=String(s||'').trim().toLowerCase();if(s.includes('admin')|
 function catKey(s,role){s=String(s||'');if(s.includes('تنفيذ')||s.includes('exec'))return 'exec';if(s.includes('مدير')||s.includes('رئيس')||s.includes('manager'))return 'manager';if(s.includes('موظف')||s.includes('employee'))return 'employee';return ['head','contract_manager','admin'].includes(role)?'manager':'employee'}
 function viewUsers(){
   return `<div class="row between"><h2>المستخدمون والصلاحيات (${state.users.length})</h2><div class="row"><button class="sec" onclick="App.userEdit()">+ مستخدم</button><label class="row" style="margin:0"><span class="pill p-pri" style="cursor:pointer;padding:8px 12px" onclick="$('xl').click()">استيراد من Excel</span></label><input type="file" id="xl" accept=".xlsx,.xls,.csv" style="display:none" onchange="App.importXl(this)"></div></div>
+  <div class="note" style="margin:10px 0">قائمة المصرّح لهم بالدخول مصدرها ملف <b>users.json</b> في GitHub${REMOTE.loaded?' (محمّل الآن)':' (غير محمّل — تعمل القائمة المحلية)'}. بعد أي تعديل هنا اضغط «تصدير users.json» وارفع الملف إلى GitHub ليُطبّق على الجميع. <button class="sm sec" onclick="App.exportUsers()">تصدير users.json</button><textarea id="uexp" style="display:none;margin-top:8px;min-height:120px;font-size:11px;direction:ltr" readonly></textarea></div>
   <div class="note" style="margin:10px 0">أعمدة ملف Excel (الصف الأول عناوين): <b>الاسم · البريد · الشركة · الشركات المسموحة · الدور · المسمى · القسم · بريد المدير · الفئة</b>.<br>الشركة: المياه الوطنية / خبراء التقنية / اديكو. الشركات المسموحة: مفصولة بفاصلة (أو «الكل»). الدور: مدير النظام / مفوّض / رئيس قسم / مدير عقد / موظف. الفئة: موظف / مدير / تنفيذي.<br>قواعد الوصول: يدخل المستخدم فقط على الشركات المسموحة له. في شركته يرى نفسه ومن تحته في الهيكل (عبر «بريد المدير»). في أي شركة أخرى مسموحة له يرى جميع موظفيها للمتابعة والإشراف دون اعتماد. مدير العقد يرى ويدير جميع موظفي شركته. المفوّض يضيف الأهداف ويربطها استراتيجيًا لأي موظف.</div>
   <div id="imp"></div>
   <div class="card" style="padding:0;overflow:auto"><table><tr><th>الاسم</th><th>البريد</th><th>الشركة</th><th>الشركات المسموحة</th><th>الدور</th><th>المدير</th><th>الحالة</th><th></th></tr>
@@ -803,14 +810,26 @@ window.App={render,go,close:closeModal,period,submitUpd,reviewUpd,comment,addExc
   subAdd(){draftSubs.push({id:nid(),title:'',kpi:'',target:'',method:'',weight:'',freq:'monthly',due:''});drawSubs()},subDel(i){draftSubs.splice(i,1);drawSubs()},subSet(i,k,v){draftSubs[i][k]=v},redrawSubs:drawSubs,subSum,
   initForm,initSave,reviewInit,evSet,evFinal,evReopen,evAck,userEdit,userSave,importXl,saveSettings,logo,saveLists,exportData,importData,resetDemo,clearAll,cb(){const f=cbFn;cbFn=null;closeModal();f&&f()},
   tab(t){S.tab=t;saveSess();render()},
-  pick(c){S.company=c;S.userId=null;saveSess();render()},
+  exportUsers(){const t=JSON.stringify({demo:false,updated:today(),users:state.users.map(({id,name,email,company,companies,role,title,section,manager,category,active})=>({id,name,email,company,companies,role,title,section,manager,category,active}))},null,1);const e=$('uexp');e.style.display='block';e.value=t;try{navigator.clipboard.writeText(t).then(()=>toast('تم النسخ'),()=>{})}catch(x){}},
+  pick(c){const u=me();if(!u||!u.companies.includes(c))return;S.company=c;S.view='home';saveSess();render()},
   login(){const e=val('em'),u=byEmail(e),err=$('lerr');
-    if(!u||u.active===false){err.innerHTML='<div class="errbox" style="margin-top:8px">البريد غير مسجل في النظام أو الحساب موقوف.</div>';return}
-    if(!u.companies.includes(S.company)){err.innerHTML=`<div class="errbox" style="margin-top:8px">غير مصرح لك بالدخول على ${esc(brand(S.company).name)}. الشركات المتاحة لك: ${u.companies.map(c=>esc(brand(c).name)).join('، ')}.</div>`;return}
-    S.userId=u.id;S.view='home';S.tab='goals';log('تسجيل دخول — '+brand(S.company).name);save();saveSess();render()},
-  logout(){S.userId=null;S.view='home';saveSess();render()},
+    if(!e){err.innerHTML='<div class="errbox" style="margin-top:8px">اكتب البريد الإلكتروني.</div>';return}
+    if(!u||u.active===false){err.innerHTML='<div class="errbox" style="margin-top:8px">هذا البريد غير مصرّح له بالدخول. تواصل مع إدارة جودة المياه والمختبرات.</div>';return}
+    S.userId=u.id;S.view='home';S.tab='goals';S.company=u.companies.length===1?u.companies[0]:null;log('تسجيل دخول');save();saveSess();render()},
+  logout(){S.userId=null;S.company=null;S.view='home';saveSess();render()},
   switchCo(c){S.company=c;S.view='home';S.allCo=false;saveSess();render()}};
-load();render();
+const REMOTE={loaded:false,demo:false};
+async function loadRemoteUsers(){
+  try{const r=await fetch('users.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!Array.isArray(j.users))return;
+    REMOTE.loaded=true;REMOTE.demo=!!j.demo;const seen=new Set();
+    j.users.forEach(x=>{const email=String(x.email||'').trim().toLowerCase();if(!email)return;seen.add(email);
+      const cos=(x.companies||[x.company]).filter(c=>CO_KEYS.includes(c));
+      const o={name:x.name,email,company:x.company,companies:cos.includes(x.company)?cos:[x.company,...cos],role:x.role||'employee',title:x.title||'',section:x.section||'',manager:String(x.manager||'').toLowerCase(),category:x.category||'employee',active:x.active!==false};
+      const ex=byEmail(email);if(ex)Object.assign(ex,o);else state.users.push({id:x.id||nid(),...o})});
+    state.users.forEach(u=>{if(!seen.has(u.email.toLowerCase()))u.active=false});save();
+  }catch(e){}
+}
+load();Promise.race([loadRemoteUsers(),new Promise(r=>setTimeout(r,4000))]).then(render);
 </script>
 </body>
 </html>
