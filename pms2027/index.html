@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نظام إدارة الأداء 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--pri:#0b3c6e;--acc:#00a3e0;--bg:#f3f6f9;--card:#fff;--ink:#17202a;--mut:#5f6b7a;--line:#e3e8ee;--ok:#1f9d6b;--warn:#d98a00;--bad:#c8402f;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tajawal,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6}
+button,input,select,textarea{font-family:inherit;font-size:14px}
+button{cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--pri);color:#fff;font-weight:700}
+button.sec{background:#fff;color:var(--pri);border:1px solid var(--line)}
+button.ghost{background:transparent;color:var(--pri);padding:4px 8px}
+button.ok{background:var(--ok)}button.bad{background:var(--bad)}button.sm{padding:4px 10px;font-size:13px}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+textarea{min-height:70px;resize:vertical}
+label{display:block;font-size:13px;color:var(--mut);margin:8px 0 3px;font-weight:500}
+h1,h2,h3,h4{margin:0 0 8px;line-height:1.3}
+.muted{color:var(--mut)}.sm{font-size:13px}.xs{font-size:12px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:900px){.g2,.g3,.g4,.g5{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;border-top:4px solid var(--acc)}
+.tile .v{font-size:26px;font-weight:800;color:var(--pri)}.tile .k{font-size:13px;color:var(--mut)}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700;background:#eef2f6;color:var(--mut);white-space:nowrap}
+.p-ok{background:#e3f5ec;color:var(--ok)}.p-warn{background:#fff3dc;color:#9a6200}.p-bad{background:#fde8e5;color:var(--bad)}.p-pri{background:color-mix(in srgb,var(--acc) 15%,#fff);color:var(--pri)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+th{background:#f7f9fb;font-weight:700;color:var(--mut);font-size:13px}
+tr.click:hover{background:#f7fafc;cursor:pointer}
+/* picker */
+.pick{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;background:linear-gradient(160deg,#eef3f8,#f9fbfc)}
+.pick h1{font-size:30px;color:#0f2a44}.cos{display:grid;grid-template-columns:repeat(3,minmax(200px,260px));gap:18px;margin-top:26px}
+@media(max-width:760px){.cos{grid-template-columns:1fr}}
+.co{background:#fff;border-radius:16px;border:1px solid var(--line);padding:26px 18px;text-align:center;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+.co:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(15,42,68,.12)}
+.co .band{position:absolute;inset:0 0 auto 0;height:7px}
+.mono{width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:24px;margin:6px auto 12px}
+.logo{height:96px;max-width:200px;object-fit:contain;margin:6px auto 12px;display:block}
+.wordmark{height:96px;margin:6px auto 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:22px;border:3px solid;border-radius:14px;width:180px;line-height:1.2}.wordmark span{font-size:12px;letter-spacing:1px;font-weight:700}
+/* login */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--pri),color-mix(in srgb,var(--pri) 55%,var(--acc)));padding:20px}
+.login .box{background:#fff;border-radius:18px;padding:30px;width:min(440px,100%);box-shadow:0 20px 50px rgba(0,0,0,.25)}
+/* shell */
+.top{background:var(--pri);color:#fff;padding:10px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:5}
+.top .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+.top .mono{width:38px;height:38px;font-size:15px;margin:0;border-radius:10px;background:var(--acc)}
+.top select{width:auto;padding:5px 8px;background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.3)}
+.top select option{color:#000}
+.top .sp{flex:1}
+.sim{background:#fff3dc;color:#7a4b00;padding:6px 18px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.lay{display:flex;min-height:calc(100vh - 58px)}
+.side{width:230px;background:#fff;border-left:1px solid var(--line);padding:14px 10px;flex-shrink:0}
+.side a{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font-weight:500;cursor:pointer;margin-bottom:2px}
+.side a:hover{background:#f2f5f8}.side a.on{background:color-mix(in srgb,var(--acc) 14%,#fff);color:var(--pri);font-weight:800}
+.side .sec{font-size:12px;color:var(--mut);margin:14px 12px 4px;font-weight:700}
+.main{flex:1;padding:20px;min-width:0}
+@media(max-width:800px){.lay{flex-direction:column}.side{width:auto;border-left:0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px}.side .sec{display:none}}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin:14px 0}
+.tabs a{padding:8px 14px;cursor:pointer;font-weight:700;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs a.on{color:var(--pri);border-color:var(--acc)}
+.goal{border:1px solid var(--line);border-radius:var(--r);background:#fff;margin-bottom:14px;overflow:hidden}
+.goal .gh{padding:12px 14px;background:color-mix(in srgb,var(--acc) 7%,#fff);border-bottom:1px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.chip{font-size:11px;padding:2px 7px;border-radius:6px;cursor:pointer;border:1px solid transparent;font-weight:700;white-space:nowrap}
+.c-up{background:#f1f3f5;color:#98a2ad}.c-open{background:var(--acc);color:#fff;animation:pulse 1.6s infinite}.c-sub{background:#fff3dc;color:#9a6200;border-color:#f3cf86}
+.c-ok{background:#e3f5ec;color:var(--ok)}.c-ret{background:#fde8e5;color:var(--bad);border-color:#f2b5ab}.c-miss{background:#fbeceb;color:#a33;text-decoration:line-through}.c-pend{background:#eef2f6;color:var(--mut)}
+@keyframes pulse{50%{opacity:.7}}
+.bar{height:8px;background:#edf1f5;border-radius:9px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--acc)}
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,30,.45);display:flex;align-items:flex-start;justify-content:center;z-index:50;padding:30px 12px;overflow:auto}
+.modal{background:#fff;border-radius:14px;width:min(860px,100%);padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.toast{position:fixed;bottom:18px;left:18px;background:#17202a;color:#fff;padding:10px 16px;border-radius:10px;z-index:60;font-weight:700}
+.note{background:#f4f8fc;border:1px dashed color-mix(in srgb,var(--acc) 50%,#ccc);border-radius:10px;padding:10px 12px;font-size:13px}
+.warnbox{background:#fff7e6;border:1px solid #f3cf86;border-radius:10px;padding:10px 12px;font-size:13px;color:#7a4b00}
+.errbox{background:#fdeceb;border:1px solid #f2b5ab;border-radius:10px;padding:10px 12px;font-size:13px;color:#8d2a1d}
+.r5{background:#1f9d6b;color:#fff}.r4{background:#5cb88a;color:#fff}.r3{background:#4a7fb5;color:#fff}.r2{background:#e0a030;color:#fff}.r1{background:#c8402f;color:#fff}
+.rbig{font-size:34px;font-weight:800;border-radius:12px;width:62px;height:62px;display:flex;align-items:center;justify-content:center}
+.sub-t td{font-size:13px}
+.ev a{color:var(--pri)}
+.hr{height:1px;background:var(--line);margin:14px 0}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="modal"></div><div id="toast"></div>
+<script>
+/* =================== ثوابت مرجعية =================== */
+const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const CO_KEYS=['nwc','tex','edico'];
+const ROLE_LBL={admin:'مدير النظام',delegate:'مفوّض الأهداف والربط',head:'رئيس قسم',contract_manager:'مدير عقد',employee:'موظف'};
+const CAT_LBL={exec:'نواب الرئيس والمدراء التنفيذيون',manager:'المدراء ورؤساء الأقسام',employee:'الموظفون'};
+const FREQ_LBL={once:'تسليم نهائي',weekly:'أسبوعي',monthly:'شهري',quarterly:'ربع سنوي',semiannual:'نصف سنوي'};
+const RATE_LBL={5:'يفوق التوقعات بامتياز',4:'يفوق التوقعات',3:'يحقق التوقعات',2:'يحقق بعض التوقعات',1:'لا يحقق التوقعات'};
+const RATE_CLR={5:'#1f9d6b',4:'#5cb88a',3:'#4a7fb5',2:'#e0a030',1:'#c8402f'};
+const CURVE={5:10,4:20,3:50,2:15,1:5};
+// المصدر: استراتيجية شركة المياه الوطنية 2026-2030 (AR2) ص8 و13
+const STRAT_NWC=[['1.1','توسيع نطاق التغطية بخدمات المياه والصرف الصحي'],['1.2','ضمان تطبيق أعلى معايير جودة المياه'],['1.3','توفير إمدادات مياه بشكل منتظم دون انقطاع'],['2.1','تحسين مستوى رضا العميل عن الخدمات'],['3.1','الحد من فاقد المياه'],['3.2','تحسين التكاليف التشغيلية'],['3.3','تعزيز قدرات إدارة سلاسل الإمداد'],['3.4','تحسين النفقات الرأسمالية'],['3.5','زيادة الإيرادات'],['3.6','تعزيز التمويل الاستراتيجي'],['4.1','تعزيز المرونة التشغيلية والتخطيط لمواجهة التحديات والاضطرابات'],['4.2','حماية الموارد الطبيعية والبيئية'],['5.1','أتمتة إدارة البيانات والتقارير'],['5.2','تسريع التحول الرقمي لتمكين الأهداف الاستراتيجية'],['5.3','تعزيز الابتكار في التقنيات ونماذج الخدمات'],['6.1','ضمان توفير السلامة للجميع'],['6.2','بناء ثقافة مؤسسية تقوم على المرونة والمسؤولية والتعاون والتركيز على العميل'],['6.3','تعزيز استقطاب الكفاءات والاحتفاظ بها وتحسين رفاهيتها'],['6.4','تسريع بناء القدرات المهنية'],['7.1','ضمان تصميم وتنفيذ نماذج وبرامج التخصيص بنجاح'],['7.2','تعزيز التعاون والشراكات على مستوى منظومة المياه']];
+const INIT_NWC=[['NWC-01','توفير إمدادات مياه بشكل منتظم دون انقطاع'],['NWC-02','الارتقاء بتجربة العميل'],['NWC-03','تعزيز الكفاءة والتميز المالي'],['NWC-04','تعزيز قدرات إدارة سلاسل الإمداد'],['NWC-05','بناء منظومة مستدامة وقادرة على مواجهة الأزمات'],['NWC-06','أتمتة إدارة البيانات والتقارير'],['NWC-07','تسريع وتيرة التحول الرقمي والابتكار'],['NWC-08','ضمان توفير السلامة للجميع'],['NWC-09','بناء منظومة تتمتع بكفاءة عالية'],['NWC-10','تعزيز التعاون والشراكات على مستوى منظومة المياه'],['NWS-01','تطوير استخدام العدادات الذكية والفوترة والتحصيل'],['NWS-02','أتمتة التوزيع'],['NWS-03','تخفيض الفاقد ومعالجة الإمداد غير المنتظم'],['NWS-04','مكافحة التلوث وتحسين نوعية المياه'],['NWS-05','توسيع وإعادة تأهيل شبكة توزيع المياه'],['NWS-06','توسيع وإعادة تأهيل شبكة الصرف الصحي'],['NWS-07','تأهيل وتطوير محطات معالجة مياه الصرف الصحي'],['NWS-08','تقييم وفحص عمليات إشراك القطاع الخاص'],['NWS-09','إعداد وطرح اتفاقيات الامتياز'],['NTP-01','إيصال مياه الشرب إلى المستهلكين'],['NTP-02','زيادة السعة لخزن المياه الاستراتيجي'],['NTP-03','تعزيز مصادر المياه الجوفية من الآبار'],['NTP-04','توفير خدمات الصرف الصحي'],['NTP-05','إعادة استخدام مياه الصرف الصحي المعالجة'],['NTP-06','زيادة المحتوى الرقمي لتحسين خدمات العملاء'],['NTP-07','خفض نسبة الفاقد في شبكات المياه'],['NTP-08','مشاركة القطاع الخاص في قطاع التوزيع']];
+// المصدر: «أهداف 2027 طموح يصنع الأثر» — إدارة جودة المياه والمختبرات
+const DEPT_GOALS=[['1','السلامة وجودة المياه'],['1.1','سلامة العمل'],['1.2','العينات والرصد'],['1.3','موثوقية النتائج'],['1.4','الحيود والتقارير'],['2','الحوكمة والامتثال'],['2.1','ضبط العقود'],['2.2','استدامة الأنظمة'],['2.3','جاهزية التدقيق'],['2.4','العقود والموارد'],['3','الخطط والدراسات والمواسم'],['3.1','سلامة مياه الشرب'],['3.2','الدراسة البيئية'],['3.3','عام الماء 2027'],['3.4','موسم الحج'],['4','الأتمتة وحوكمة البيانات'],['4.1','أتمتة مختبر المياه'],['4.2','أتمتة مختبر الخدمات البيئية'],['4.3','أتمتة عمليات الدعم'],['4.4','سجل الأتمتة'],['4.5','جودة وإتاحة البيانات'],['4.6','الإنذار المبكر'],['5','تطوير الفريق وعام الموظف'],['5.1','تجربة الموظف'],['5.2','التطوير والكفاءة'],['5.3','نقل المعرفة'],['5.4','استمرارية المعرفة']];
+
+const DEFAULT_LOGOS={nwc:'data:image/png;base64,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',edico:'data:image/png;base64,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',tex:''};
+/* =================== أدوات =================== */
+const pad=n=>String(n).padStart(2,'0');
+const toD=s=>new Date(s+'T00:00:00Z');
+const fmt=d=>d.toISOString().slice(0,10);
+const addDays=(s,n)=>{const d=toD(s);d.setUTCDate(d.getUTCDate()+n);return fmt(d)};
+const lastDay=(y,m)=>fmt(new Date(Date.UTC(y,m,0)));
+const realToday=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const today=()=>state.settings.simDate||realToday();
+const nid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-3);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fdate=s=>{if(!s)return '—';const [y,m,d]=s.split('-');return `${+d} ${MONTHS[+m-1]} ${y}`};
+const sdate=s=>{if(!s)return '';const [y,m,d]=s.split('-');return `${+d}/${+m}`};
+const r1=x=>x==null?null:Math.round(x*10)/10;
+const pctTxt=x=>x==null?'—':r1(x)+'%';
+const nowTs=()=>new Date().toISOString();
+function $(id){return document.getElementById(id)}
+function val(id){const e=$(id);return e?e.value.trim():''}
+
+/* =================== الحالة والتخزين =================== */
+const KEY='nwc_pms_2027_v1';
+let state=null;
+let S={company:null,userId:null,view:'home',param:null,tab:'goals',allCo:false,q:''};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('تعذّر الحفظ في المتصفح (المساحة ممتلئة أو التخزين غير متاح)')}}
+function saveSess(){try{sessionStorage.setItem(KEY+'_s',JSON.stringify(S))}catch(e){}}
+function load(){
+  try{const t=localStorage.getItem(KEY);if(t)state=JSON.parse(t)}catch(e){}
+  if(!state)state=makeDemo();
+  CO_KEYS.forEach(k=>{const b=state.settings.brands[k];if(!b.logo&&DEFAULT_LOGOS[k])b.logo=DEFAULT_LOGOS[k];if(k==='edico'&&b.en==='EDICO'){Object.assign(b,{name:'شركة أديكو',en:'ADECO',pri:'#2f6f1e',acc:'#e9a800'})}});
+  try{const t=sessionStorage.getItem(KEY+'_s');if(t)S=Object.assign(S,JSON.parse(t))}catch(e){}
+}
+function log(action){const u=me();state.log.unshift({ts:nowTs(),user:u?u.name:'—',action});if(state.log.length>800)state.log.length=800}
+
+/* =================== المستخدمون والصلاحيات =================== */
+const U=id=>state.users.find(u=>u.id===id);
+const byEmail=e=>state.users.find(u=>u.email.toLowerCase()===String(e||'').trim().toLowerCase());
+const me=()=>S.userId?U(S.userId):null;
+function managerOf(u){return u&&u.manager?byEmail(u.manager):null}
+function isAncestor(a,t){let m=managerOf(t),g=0;while(m&&g<25){if(m.id===a.id)return true;m=managerOf(m);g++}return false}
+function canView(v,t){
+  if(!v||!t)return false; if(v.id===t.id)return true;
+  if(v.role==='admin'||v.role==='delegate')return true;
+  if(v.role==='contract_manager'&&v.company===t.company)return true;
+  if(isAncestor(v,t))return true;
+  if(t.company!==v.company&&v.companies.includes(t.company))return true; // إشراف على عقد شركة أخرى
+  return false;
+}
+function canManage(v,t){
+  if(!v||!t||v.id===t.id)return false;
+  if(v.role==='admin'||v.role==='delegate')return true;
+  if(v.role==='contract_manager'&&v.company===t.company)return true;
+  return isAncestor(v,t);
+}
+function canReview(v,t){return canManage(v,t)||(v&&t&&v.id===t.id&&v.role==='admin'&&!managerOf(t))}
+function canEditGoals(v,t){return canManage(v,t)||(v.id===t.id&&(!meta(t.id).locked||v.role==='admin'))}
+function scopeUsers(v,co){return state.users.filter(t=>t.id!==v.id&&t.active!==false&&(co==='all'||t.company===co)&&canView(v,t))}
+function reviewables(v){return state.users.filter(t=>t.active!==false&&canReview(v,t))}
+function meta(uid){if(!state.goalMeta[uid])state.goalMeta[uid]={locked:false,changes:[]};return state.goalMeta[uid]}
+function brand(co){return state.settings.brands[co]}
+function stratList(co){return co==='nwc'?state.lists.strat:state.lists.dept}
+function stratName(co,code){const f=stratList(co).find(x=>x[0]===code);return f?f[0]+' '+f[1]:code||''}
+function initName(code){const f=state.lists.init.find(x=>x[0]===code);return f?f[0]+' — '+f[1]:code||''}
+
+/* =================== الفترات ونوافذ الرفع =================== */
+function periodsFor(s){
+  const st=state.settings,cs=st.cycleStart,ce=st.cycleEnd,W=st.windows,out=[];
+  const push=(key,label,start,end,win,open)=>out.push({key,label,start,end,winOpen:open||addDays(end,1),winClose:addDays(end,win)});
+  const months=[];{let y=+cs.slice(0,4),m=+cs.slice(5,7);for(let i=0;i<24;i++){const a=`${y}-${pad(m)}-01`;if(a>ce)break;months.push([y,m]);m++;if(m>12){m=1;y++}}}
+  if(s.freq==='monthly'){months.forEach(([y,m])=>{let e=lastDay(y,m);if(e>ce)e=ce;push(`M${y}${pad(m)}`,`${MONTHS[m-1]} ${y}`,`${y}-${pad(m)}-01`,e,W.monthly)})}
+  else if(s.freq==='weekly'){let d=toD(cs);d.setUTCDate(d.getUTCDate()-d.getUTCDay());let a=fmt(d),i=1;while(a<=ce){let e=addDays(a,6);if(e>ce)e=ce;push('W'+i,`أسبوع ${i} (${sdate(a<cs?cs:a)}–${sdate(e)})`,a<cs?cs:a,e,W.weekly);a=addDays(a,7);i++}}
+  else if(s.freq==='quarterly'||s.freq==='semiannual'){const n=s.freq==='quarterly'?3:6;for(let i=0;i<months.length;i+=n){const g=months.slice(i,i+n),[y1,m1]=g[0],[y2,m2]=g[g.length-1];let e=lastDay(y2,m2);if(e>ce)e=ce;const idx=i/n+1;push((n===3?'Q':'H')+idx,(n===3?'الربع ':'النصف ')+idx+` (${MONTHS[m1-1]}–${MONTHS[m2-1]})`,`${y1}-${pad(m1)}-01`,e,n===3?W.quarterly:W.semiannual)}}
+  else{const due=s.due||ce;push('O','التسليم: '+fdate(due),cs,due,W.once,cs)}
+  return out;
+}
+function updsOf(subId,pk){return state.updates.filter(u=>u.subId===subId&&u.periodKey===pk)}
+function latestUpd(subId,pk){const a=updsOf(subId,pk);return a.length?a[a.length-1]:null}
+function excOf(subId,pk){return state.exceptions.filter(x=>x.subId===subId&&x.periodKey===pk).sort((a,b)=>a.until<b.until?1:-1)[0]}
+function closeOf(s,p){const x=excOf(s.id,p.key);return x&&x.until>p.winClose?x.until:p.winClose}
+function winState(s,p){const t=today(),x=excOf(s.id,p.key);if(x&&t<=x.until&&t>=x.from)return 'open';if(t<p.winOpen)return 'upcoming';if(t<=p.winClose)return 'open';return 'closed'}
+function chipOf(s,p){
+  const up=latestUpd(s.id,p.key),w=winState(s,p);
+  if(up&&up.status==='approved')return ['c-ok','معتمد '+r1(up.approvedPct)+'%'];
+  if(up&&up.status==='submitted')return ['c-sub','بانتظار المراجعة'];
+  if(up&&up.status==='returned')return w==='open'?['c-ret','مُعاد — أعد الرفع']:['c-miss','مُعاد ولم يُستكمل'];
+  if(w==='open')return ['c-open','الرفع مفتوح حتى '+sdate(closeOf(s,p))];
+  if(w==='upcoming')return ['c-up','يفتح '+sdate(p.winOpen)];
+  return ['c-miss','فائت'];
+}
+/* حساب الهدف الفرعي حتى تاريخ معين */
+function subCalc(s,asOf){
+  const t=today(),ps=periodsFor(s),vals=[];let due=0,onTime=0,pending=0,missed=0;const open=[];
+  for(const p of ps){
+    const up=latestUpd(s.id,p.key),w=winState(s,p),cl=closeOf(s,p);
+    if(w==='open'&&(!up||up.status==='returned'))open.push(p);
+    if(up&&up.status==='submitted')pending++;
+    const isDue=p.end<=asOf;
+    if(up&&up.status==='approved'){if(isDue||s.freq==='once')vals.push(Math.min(up.approvedPct,state.settings.maxPct))}
+    else if(isDue&&t>cl&&!(up&&up.status==='submitted')){vals.push(0);missed++}
+    if(t>p.winClose&&p.end<=asOf){due++;const first=updsOf(s.id,p.key)[0];if(first&&first.ts.slice(0,10)<=cl)onTime++}
+  }
+  return {score:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null,n:vals.length,due,onTime,pending,missed,open};
+}
+function goalsOf(uid){return state.goals.filter(g=>g.userId===uid)}
+function inCycle(d,asOf){return d>=state.settings.cycleStart&&d<=asOf}
+function stats(u,asOf){
+  asOf=asOf||today();const gs=goalsOf(u.id);let ws=0,acc=0,due=0,onTime=0,pending=0,missed=0;const open=[],perGoal={};
+  for(const g of gs){let gw=0,ga=0;for(const s of g.subs){const r=subCalc(s,asOf);Object.defineProperty(s,'_r',{value:r,enumerable:false,configurable:true,writable:true});if(r.score!=null){ws+=+s.weight;acc+=r.score*s.weight;gw+=+s.weight;ga+=r.score*s.weight}due+=r.due;onTime+=r.onTime;pending+=r.pending;missed+=r.missed;r.open.forEach(p=>open.push({g,s,p}))}perGoal[g.id]=gw?ga/gw:null}
+  const wTot=gs.reduce((a,g)=>a+(+g.weight||0),0);
+  const inits=state.initiatives.filter(i=>i.userId===u.id&&i.status==='approved'&&inCycle(i.date,asOf));
+  const achs=state.achievements.filter(i=>i.userId===u.id&&i.status==='approved'&&inCycle(i.date,asOf));
+  const pendI=state.initiatives.filter(i=>i.userId===u.id&&i.status==='submitted').length+state.achievements.filter(i=>i.userId===u.id&&i.status==='submitted').length;
+  const pct=ws?acc/ws:null;
+  return {pct,perGoal,wTot,due,onTime,onTimePct:due?onTime/due*100:null,pending,pendI,missed,open,inits:inits.length,initsDept:inits.filter(i=>i.deptImpact).length,achs:achs.length,goals:gs.length};
+}
+function pctRating(p){const b=state.settings.bands,r=Math.floor(p+1e-9);return r>=b.r5?5:r>=b.r4?4:r>=b.r3?3:r>=b.r2?2:1}
+function evalCalc(u,phase){
+  const st=state.settings,asOf=phase==='mid'?st.midEnd:st.cycleEnd,s=stats(u,asOf>today()?today():asOf),ev=getEval(u.id,phase);
+  if(s.pct==null)return {s,none:true,ev};
+  const gr=pctRating(s.pct),[gw,ow]=st.weights[u.category]||[50,50],comp=+ev.comp||0;
+  const score=comp?(gw*gr+ow*comp)/100:gr;let rating=Math.floor(score+0.5);const notes=[];
+  if(st.gating){
+    if(rating===5&&!(s.achs>0&&s.inits>0)){rating=4;notes.push('الدرجة 5 تتطلب منجزًا معتمدًا ومبادرة معتمدة — خُفّضت إلى 4')}
+    if(rating===4&&!(s.initsDept>0)){rating=3;notes.push('الدرجة 4 تتطلب مبادرة معتمدة ذات أثر على مستوى الإدارة — خُفّضت إلى 3')}
+  }
+  return {s,gr,gw,ow,comp,score,rating,notes,ev,provisional:!comp};
+}
+function getEval(uid,phase){const k=uid+'_'+phase;if(!state.evals[k])state.evals[k]={comp:'',just:'',gaps:'',finalized:false};return state.evals[k]}
+
+/* =================== بيانات تجريبية =================== */
+function makeDemo(){
+  const brands={nwc:{name:'شركة المياه الوطنية',en:'National Water Company',pri:'#0b3c6e',acc:'#00a3e0',logo:DEFAULT_LOGOS.nwc},tex:{name:'شركة خبراء التقنية',en:'Technology Experts',pri:'#173f3f',acc:'#26a69a',logo:''},edico:{name:'شركة أديكو',en:'ADECO',pri:'#2f6f1e',acc:'#e9a800',logo:DEFAULT_LOGOS.edico}};
+  const st={cycleStart:'2026-11-01',cycleEnd:'2027-10-31',midEnd:'2027-04-30',simDate:'2027-03-03',windows:{weekly:2,monthly:5,quarterly:7,semiannual:7,once:7},bands:{r5:120,r4:101,r3:80,r2:60},weights:{exec:[70,30],manager:[60,40],employee:[50,50]},gating:true,maxPct:150,brands};
+  const D='@example.com';
+  const mk=(id,name,email,company,companies,role,title,section,manager,category)=>({id,name,email:email+D,company,companies,role,title,section,manager:manager?manager+D:'',category,active:true});
+  const users=[
+    mk('u1','بكر عماد كردي','bakr','nwc',['nwc','tex','edico'],'admin','مدير إدارة جودة المياه والمختبرات','الإدارة','', 'manager'),
+    mk('u2','بدر عبدالعزيز شقرون','badr','nwc',['nwc','tex'],'head','رئيس قسم الكيمياء','قسم الكيمياء','bakr','manager'),
+    mk('u3','عبدالإله محمد مشمنق','abdulelah','nwc',['nwc','edico'],'head','رئيس قسم مختبر الخدمات البيئية','قسم الخدمات البيئية','bakr','manager'),
+    mk('u4','سلطان محمود السيسي','sultan','nwc',['nwc','tex','edico'],'head','رئيس قسم الدعم','قسم الدعم','bakr','manager'),
+    mk('u5','مفوّض الأهداف (تجريبي)','delegate','nwc',['nwc','tex','edico'],'delegate','منسق الأداء','الإدارة','bakr','employee'),
+    mk('u6','موظف كيمياء (تجريبي)','chem1','nwc',['nwc','tex'],'employee','أخصائي كيمياء','قسم الكيمياء','badr','employee'),
+    mk('u7','موظف خدمات بيئية (تجريبي)','env1','nwc',['nwc','edico'],'employee','أخصائي خدمات بيئية','قسم الخدمات البيئية','abdulelah','employee'),
+    mk('u8','رائد صديق','raed','tex',['tex'],'contract_manager','مدير عقد','عقد خبراء التقنية','badr','manager'),
+    mk('u9','شعبان','shaaban','tex',['tex'],'contract_manager','مدير عقد','عقد خبراء التقنية','badr','manager'),
+    mk('u10','فني مختبر — خبراء (تجريبي)','tex1','tex',['tex'],'employee','فني مختبر كيمياء','عقد خبراء التقنية','raed','employee'),
+    mk('u11','فني سحب عينات — خبراء (تجريبي)','tex2','tex',['tex'],'employee','فني سحب عينات','عقد خبراء التقنية','raed','employee'),
+    mk('u12','عبدالعزيز قمصاني','qamsani','edico',['edico'],'contract_manager','مدير عقد','عقد اديكو','abdulelah','manager'),
+    mk('u13','محمد الجرايحي','jarayhi','edico',['edico'],'contract_manager','مدير عقد','عقد اديكو','abdulelah','manager'),
+    mk('u14','فني مختبر بيئي — اديكو (تجريبي)','ed1','edico',['edico'],'employee','فني مختبر خدمات بيئية','عقد اديكو','qamsani','employee'),
+    mk('u15','فني محطات — اديكو (تجريبي)','ed2','edico',['edico'],'employee','فني متابعة محطات','عقد اديكو','qamsani','employee'),
+  ];
+  const sub=(title,kpi,target,method,weight,freq,due)=>({id:nid(),title,kpi,target,method,weight,freq,due:due||''});
+  const goals=[
+    {id:nid(),userId:'u1',title:'السلامة والامتثال',weight:10,strat:'6.1',init:'NWC-08',subs:[
+      sub('سلامة العاملين','عدد إصابات العمل','صفر إصابات في جميع المختبرات','سجل حوادث السلامة وشبه الحوادث',3,'monthly'),
+      sub('إغلاق ملاحظات السلامة والسلامة الحيوية','نسبة الإغلاق في المهلة','100%','سجل الملاحظات وتواريخ إغلاقها',2,'quarterly'),
+      sub('المحافظة على الاعتماد المخبري وتطويره','ملاحظات رئيسية في تدقيق ISO 17025','صفر ملاحظات رئيسية','تقرير تدقيق المركز السعودي للاعتماد',3,'once','2027-05-31'),
+      sub('مراجعة الامتثال القانوني والتنظيمي','عدد المراجعات','مرتان سنويًا لجميع المختبرات','تقرير المراجعة وصور الرخص السارية',2,'semiannual')]},
+    {id:nid(),userId:'u1',title:'الامتثال التنظيمي والإبلاغ عبر مركز العمليات',weight:30,strat:'1.2',init:'NWS-04',subs:[
+      sub('تنفيذ خطة أخذ العينات 2027','نسبة التنفيذ','100% من الخطة المعتمدة','تقرير LIMS (المنفذ مقابل المخطط)',8,'monthly'),
+      sub('إشعار OCC فور ثبوت أي حيود','الالتزام بزمن الإشعار','100%','سجل الحيود: وقت الثبوت مقابل الإشعار',9,'monthly'),
+      sub('الإبلاغ عن الحوادث البيئية','الالتزام بالإشعار الفوري','100%','سجل البلاغات البيئية',6,'quarterly'),
+      sub('تسليم بيانات مؤشر جودة المياه','التسليم في الموعد','100%','إيميلات/خطابات التسليم',7,'quarterly')]},
+    {id:nid(),userId:'u1',title:'الخطط والدراسات والمواسم',weight:20,strat:'4.1',init:'NWC-05',subs:[
+      sub('خطة سلامة مياه الشرب (WSP)','رفع الخطة للاعتماد','بحلول 30 يونيو','النسخة الجاهزة وخطاب الرفع',7,'once','2027-06-30'),
+      sub('الدراسة التحليلية لشبكات الخدمات البيئية','تسليم التقرير النهائي','30 سبتمبر','التقرير النهائي وخطاب التسليم',6,'once','2027-09-30'),
+      sub('مبادرة عام الماء 2027','مبادرة بمؤشرات أثر معتمدة','مبادرة واحدة','تقرير المبادرة ومؤشراتها',4,'once','2027-10-15'),
+      sub('خطة جودة موسم الحج 1448هـ','اعتماد الخطة والتقرير الختامي','قبل الموسم','الخطة والتكليفات والتقرير الختامي',3,'once','2027-06-15')]},
+    {id:nid(),userId:'u1',title:'الأتمتة وحوكمة البيانات',weight:20,strat:'5.1',init:'NWC-06',subs:[
+      sub('سجل الأتمتة المعتمد','حصر العمليات القابلة للأتمتة','بحلول 31 مارس','سجل الأتمتة المعتمد',3,'once','2027-03-31'),
+      sub('تنفيذ الأتمتة','نسبة المنفذ مما ثبتت إمكانيته','100%','سجل الأتمتة قبل/بعد',4,'quarterly'),
+      sub('لوحة نتائج يومية للتشغيل','إتاحة اللوحة وتحديثها يوميًا','بحلول 31 مارس','رابط اللوحة وسجل التحديث',5,'monthly'),
+      sub('منظومة الإنذار المبكر','تشغيل المنظومة ثم دراسة الجدوى','30 سبتمبر','تقرير التنبيهات والإجراءات',8,'once','2027-09-30')]},
+    {id:nid(),userId:'u1',title:'العقود والموارد والفريق',weight:20,strat:'6.4',init:'NWC-09',subs:[
+      sub('تقييم مقاولي التشغيل والصيانة','نسبة التقييم الشهري','100%','نماذج التقييم وسجل المستخلصات',6,'monthly'),
+      sub('احتياجات الميزانية وطلبات الصرف','الرفع وفق الجدول','100%','الطلبات مقابل الجدول',3,'quarterly'),
+      sub('التدريب ونقل المعرفة','جلسة نقل معرفة شهرية','12 جلسة','سجلات الحضور',6,'monthly'),
+      sub('تمكين الصف الثاني','مصفوفة مهام حرجة وبديل مؤهل','لكل قسم','المصفوفات وسجل التغطية',5,'semiannual')]},
+    {id:nid(),userId:'u2',title:'موثوقية نتائج الكيمياء',weight:60,strat:'1.2',init:'NWS-04',subs:[
+      sub('تحليل عينات الخطة والرصد','نسبة العينات المحللة','100%','تقرير LIMS',30,'monthly'),
+      sub('اختبارات الكفاءة PT','نسبة النتائج المقبولة','100%','تقارير PT',30,'quarterly')]},
+    {id:nid(),userId:'u2',title:'سلامة المختبر',weight:40,strat:'6.1',init:'NWC-08',subs:[
+      sub('جولات السلامة الشهرية','تنفيذ الجولات وإغلاق الملاحظات','100%','تقارير الجولات',40,'monthly')]},
+    {id:nid(),userId:'u6',title:'دقة التحاليل الكيميائية',weight:100,strat:'1.2',init:'NWS-04',subs:[
+      sub('إدخال النتائج في LIMS','الإدخال اليومي','100%','تقرير LIMS',50,'monthly'),
+      sub('معايرة الأجهزة','تنفيذ خطة المعايرة','100%','سجل المعايرة',50,'quarterly')]},
+    {id:nid(),userId:'u10',title:'تنفيذ تحاليل الكيمياء',weight:100,strat:'1.3',init:'',subs:[
+      sub('تحليل العينات في الزمن المحدد','نسبة الالتزام','100%','تقرير LIMS',40,'monthly'),
+      sub('نظافة المختبر (Housekeeping)','تنفيذ خطة النظافة','100%','قائمة التحقق الأسبوعية',20,'weekly'),
+      sub('الجاهزية لتدقيق الاعتماد','صفر ملاحظات على الفني','0','تقرير التدقيق',40,'once','2027-05-31')]},
+    {id:nid(),userId:'u11',title:'سحب العينات',weight:100,strat:'1.2',init:'',subs:[
+      sub('تنفيذ خطة السحب','نسبة السحب حسب الخطة','100%','تقرير السحب',60,'monthly'),
+      sub('سلامة الحفظ والنقل','صفر رفض عينات','0','سجل الاستلام',40,'monthly')]},
+    {id:nid(),userId:'u14',title:'تحاليل الخدمات البيئية',weight:100,strat:'4.2',init:'',subs:[
+      sub('الفحوصات العارضة','تنفيذ الفحوصات حسب الأولوية','100%','سجل الفحوصات',50,'monthly'),
+      sub('تقرير أصول وجودة محطات المعالجة','تسليم التقرير','ربعيًا','التقرير',50,'quarterly')]},
+    {id:nid(),userId:'u15',title:'متابعة المحطات',weight:100,strat:'4.6',init:'',subs:[
+      sub('إدخال بيانات المحطات','الإدخال دون تأخير','100%','لوحة المؤشر',100,'monthly')]},
+  ];
+  const s0={settings:st,users,goals,updates:[],initiatives:[],achievements:[],evals:{},exceptions:[],goalMeta:{},log:[],lists:{strat:STRAT_NWC,init:INIT_NWC,dept:DEPT_GOALS}};
+  // تحديثات تجريبية لفترات انتهت نوافذها قبل تاريخ المحاكاة
+  let seed=7;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+  const prev=state;state=s0;
+  for(const g of goals){const owner=users.find(u=>u.id===g.userId),rev=users.find(u=>u.email===owner.manager)||owner;
+    for(const s of g.subs){for(const p of periodsFor(s)){if(s.freq==='once')continue;
+      const x=rnd();
+      if(p.winClose<st.simDate){if(x<0.1)continue;const sp=Math.round(85+rnd()*30);
+        s0.updates.push({id:nid(),subId:s.id,goalId:g.id,userId:g.userId,periodKey:p.key,desc:'تم التنفيذ وفق الخطة للفترة '+p.label,value:'',selfPct:sp,doneDate:p.end,links:['https://onedrive.example/evidence'],files:[],status:'approved',approvedPct:Math.min(sp,Math.round(sp-rnd()*8)),reviewer:rev.name,mgrComment:'تم التحقق من الشاهد',ts:p.winOpen+'T08:00:00Z',comments:[]});}
+      else if(p.winOpen<=st.simDate&&p.winClose>=st.simDate&&x<0.45){const sp=Math.round(90+rnd()*20);
+        s0.updates.push({id:nid(),subId:s.id,goalId:g.id,userId:g.userId,periodKey:p.key,desc:'إنجاز الفترة '+p.label,value:'',selfPct:sp,doneDate:p.end,links:['https://onedrive.example/evidence'],files:[],status:'submitted',approvedPct:null,ts:st.simDate+'T07:00:00Z',comments:[]});}
+    }}}
+  s0.initiatives.push({id:nid(),userId:'u6',name:'أتمتة نقل نتائج جهاز ICP إلى LIMS',date:'2027-01-20',benefit:'خفض زمن الإدخال 60% وإلغاء أخطاء النقل',participation:'direct',share:70,desc:'ربط مخرجات الجهاز بنظام LIMS عبر ملف معتمد',deptImpact:true,impact:'تحسين موثوقية نتائج القسم وتوفير ساعتين يوميًا',links:[],files:[],status:'approved',reviewer:'بدر عبدالعزيز شقرون',mgrComment:'أثر واضح',ts:'2027-01-25T08:00:00Z'});
+  s0.initiatives.push({id:nid(),userId:'u10',name:'قائمة تحقق موحدة لاستلام العينات',date:'2027-02-10',benefit:'خفض رفض العينات',participation:'indirect',share:30,desc:'المشاركة في إعداد قائمة التحقق',deptImpact:false,impact:'',links:[],files:[],status:'submitted',ts:'2027-02-12T08:00:00Z'});
+  s0.achievements.push({id:nid(),userId:'u6',name:'أول طريقة تحليل معتمدة داخليًا للمعادن النزرة في القطاع',date:'2027-02-15',desc:'تطوير والتحقق من طريقة تحليل جديدة',unprecedented:'لم تكن متاحة في أي مختبر بالقطاع',impact:'الاستغناء عن الإرسال لمختبر خارجي على مستوى الشركة',links:[],files:[],status:'approved',reviewer:'بدر عبدالعزيز شقرون',mgrComment:'معتمد',ts:'2027-02-20T08:00:00Z'});
+  s0.goalMeta={u1:{locked:true,changes:[]},u2:{locked:true,changes:[]},u6:{locked:true,changes:[]},u10:{locked:true,changes:[]},u11:{locked:true,changes:[]},u14:{locked:true,changes:[]},u15:{locked:false,changes:[]}};
+  s0.log.push({ts:nowTs(),user:'النظام',action:'إنشاء بيانات تجريبية'});
+  state=prev;return s0;
+}
+
+/* =================== التنقل والعرض =================== */
+let charts=[];
+function go(view,param){S.view=view;S.param=param||null;if(view==='emp'||view==='me')S.tab=S.tab||'goals';saveSess();render();window.scrollTo(0,0)}
+function applyTheme(){
+  const b=S.company?brand(S.company):{pri:'#0b3c6e',acc:'#00a3e0'};
+  document.documentElement.style.setProperty('--pri',b.pri);document.documentElement.style.setProperty('--acc',b.acc);
+}
+function render(){
+  charts.forEach(c=>{try{c.destroy()}catch(e){}});charts=[];
+  applyTheme();const a=$('app');
+  if(S.userId&&!U(S.userId)){S.userId=null}
+  if(!S.company)a.innerHTML=viewPicker();
+  else if(!S.userId)a.innerHTML=viewLogin();
+  else a.innerHTML=viewShell();
+  pendingCharts.splice(0).forEach(f=>{try{f()}catch(e){console.warn(e)}});
+}
+const pendingCharts=[];
+function monoOf(co){const b=brand(co);return b.logo?`<img class="logo" src="${b.logo}" alt="${esc(b.name)}">`:`<div class="wordmark" style="border-color:${b.acc};color:${b.pri}">${esc(b.name.replace('شركة ','').trim())}<span style="color:${b.acc}">${esc(b.en)}</span></div>`}
+
+function viewPicker(){
+  return `<div class="pick">
+   <div class="pill p-pri" style="margin-bottom:10px">دورة الأداء: ${fdate(state.settings.cycleStart)} – ${fdate(state.settings.cycleEnd)}</div>
+   <h1>نظام إدارة الأداء 2027</h1>
+   <div class="muted">إدارة جودة المياه والمختبرات — وحدة أعمال منطقة المدينة المنورة</div>
+   <div class="cos">${CO_KEYS.map(k=>{const b=brand(k);return `<div class="co" onclick="App.pick('${k}')"><div class="band" style="background:linear-gradient(90deg,${b.pri},${b.acc})"></div>${monoOf(k)}<h3 style="color:${b.pri}">${esc(b.name)}</h3><div class="muted xs">${esc(b.en)}</div></div>`}).join('')}</div>
+   <div class="muted xs" style="margin-top:28px">اختر الشركة للدخول — لكل شركة صفحاتها وهويتها، ولا يُقبل الدخول إلا على الشركة المسجلة لك</div>
+  </div>`;
+}
+function viewLogin(){
+  const b=brand(S.company);const demo=state.users.filter(u=>u.companies.includes(S.company)&&u.active!==false);
+  return `<div class="login"><div class="box">
+   <div style="text-align:center">${monoOf(S.company)}<h2 style="color:var(--pri)">${esc(b.name)}</h2><div class="muted sm">نظام إدارة الأداء 2027</div></div>
+   <label>البريد الإلكتروني</label><input id="em" type="email" placeholder="name@company.com" onkeydown="if(event.key==='Enter')App.login()">
+   <div id="lerr"></div>
+   <div class="row" style="margin-top:14px"><button onclick="App.login()" style="flex:1">دخول</button><button class="sec" onclick="App.pick(null)">تغيير الشركة</button></div>
+   <div class="hr"></div>
+   <details><summary class="sm muted" style="cursor:pointer">حسابات تجريبية (للنموذج الأولي فقط)</summary>
+   <div style="max-height:220px;overflow:auto;margin-top:8px">${demo.map(u=>`<div class="row between sm" style="padding:4px 0;border-bottom:1px solid var(--line)"><span>${esc(u.name)} <span class="muted xs">— ${ROLE_LBL[u.role]} · ${esc(brand(u.company).name)}</span></span><button class="ghost sm" onclick="$('em').value='${esc(u.email)}';App.login()">دخول</button></div>`).join('')}</div></details>
+   <div class="warnbox" style="margin-top:12px">نموذج أولي: الدخول هنا بالبريد فقط دون تحقق. في النسخة التشغيلية يكون الدخول ببريد الشركة مع رمز تحقق (OTP) أو حساب Microsoft.</div>
+  </div></div>`;
+}
+function navItems(u){
+  const co=S.company,scope=scopeUsers(u,co),rv=pendingReviews(u).length;
+  const it=[['home','لوحتي'],['me','أهدافي وإنجازي'],['inits','المبادرات'],['achs','المنجزات']];
+  const t=[];if(scope.length){t.push(['dash','لوحة المعلومات']);t.push(['team','الموظفون']);}
+  if(rv||scope.length)t.push(['reviews','المراجعات المعلقة',rv]);
+  const ad=u.role==='admin'?[['users','المستخدمون والصلاحيات'],['settings','الإعدادات والسياسة'],['lists','القوائم الاستراتيجية'],['log','سجل العمليات'],['data','البيانات']]:(u.role==='delegate'?[['lists','القوائم الاستراتيجية']]:[]);
+  return {it,t,ad};
+}
+function viewShell(){
+  const u=me(),b=brand(S.company),n=navItems(u);
+  const a=(x)=>`<a class="${S.view===x[0]?'on':''}" onclick="App.go('${x[0]}')"><span>${x[1]}</span>${x[2]?`<span class="pill p-bad">${x[2]}</span>`:''}</a>`;
+  const sim=state.settings.simDate?`<div class="sim">⏱ تاريخ المحاكاة مفعّل: <b>${fdate(state.settings.simDate)}</b> — يُستخدم لتجربة نوافذ الرفع والتقييم. ${u.role==='admin'?`<button class="sm sec" onclick="App.go('settings')">تغيير</button>`:''}</div>`:'';
+  return `<div class="top"><div class="brand">${b.logo?`<img src="${b.logo}" style="height:42px;background:#fff;border-radius:8px;padding:3px 6px">`:''}<div>${esc(b.name)}<div class="xs" style="opacity:.8;font-weight:500">نظام إدارة الأداء 2027</div></div></div>
+   <div class="sp"></div>
+   ${u.companies.length>1?`<select onchange="App.switchCo(this.value)">${u.companies.map(c=>`<option value="${c}" ${c===S.company?'selected':''}>${esc(brand(c).name)}</option>`).join('')}</select>`:''}
+   <div class="sm" style="text-align:left">${esc(u.name)}<div class="xs" style="opacity:.8">${ROLE_LBL[u.role]}</div></div>
+   <button class="sec sm" onclick="App.logout()">خروج</button></div>${sim}
+   <div class="lay"><nav class="side">${n.it.map(a).join('')}${n.t.length?'<div class="sec">الإشراف والمتابعة</div>'+n.t.map(a).join(''):''}${n.ad.length?'<div class="sec">الإدارة</div>'+n.ad.map(a).join(''):''}</nav>
+   <main class="main">${viewMain(u)}</main></div>`;
+}
+function viewMain(u){
+  try{switch(S.view){
+    case 'home':return viewHome(u);
+    case 'me':return viewEmployee(u,u);
+    case 'emp':{const t=U(S.param);return t&&canView(u,t)?viewEmployee(u,t):'<div class="errbox">غير مصرح</div>'}
+    case 'inits':return viewInitList(u,'inits');
+    case 'achs':return viewInitList(u,'achs');
+    case 'dash':return viewDash(u);
+    case 'team':return viewTeam(u);
+    case 'reviews':return viewReviews(u);
+    case 'users':return u.role==='admin'?viewUsers():'';
+    case 'settings':return u.role==='admin'?viewSettings():'';
+    case 'lists':return viewLists(u);
+    case 'log':return u.role==='admin'?viewLog():'';
+    case 'data':return u.role==='admin'?viewData():'';
+    default:return viewHome(u);
+  }}catch(e){console.error(e);return `<div class="errbox">خطأ في العرض: ${esc(e.message)}</div>`}
+}
+
+/* ---------- لوحتي ---------- */
+function rateBadge(r,big){return r?`<span class="${big?'rbig':'pill'} r${r}">${big?r:r+' — '+RATE_LBL[r]}</span>`:'<span class="pill">—</span>'}
+function viewHome(u){
+  const s=stats(u),ev=evalCalc(u,today()>state.settings.midEnd?'annual':'mid');
+  return `<div class="row between"><div><h2>مرحبًا ${esc(u.name.split(' ')[0])}</h2><div class="muted sm">${esc(u.title)} · ${esc(brand(u.company).name)} · اليوم: ${fdate(today())}</div></div></div>
+  <div class="grid g4" style="margin-top:14px">
+   <div class="tile"><div class="k">نسبة إنجاز الأهداف حتى تاريخه</div><div class="v">${pctTxt(s.pct)}</div></div>
+   <div class="tile"><div class="k">التقدير المتوقع (استرشادي)</div><div class="v">${ev.none?'—':ev.rating}</div><div class="xs muted">${ev.none?'لا توجد فترات مستحقة بعد':RATE_LBL[ev.rating]}</div></div>
+   <div class="tile"><div class="k">الالتزام بالرفع في الموعد</div><div class="v">${pctTxt(s.onTimePct)}</div><div class="xs muted">${s.onTime} من ${s.due} فترة</div></div>
+   <div class="tile"><div class="k">مبادرات / منجزات معتمدة</div><div class="v">${s.inits} / ${s.achs}</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+   <div class="card"><h3>نوافذ الرفع المفتوحة الآن</h3>${s.open.length?`<table>${s.open.map(o=>`<tr><td>${esc(o.s.title)}<div class="xs muted">${esc(o.g.title)}</div></td><td class="sm">${esc(o.p.label)}</td><td><span class="pill p-warn">حتى ${fdate(closeOf(o.s,o.p))}</span></td><td><button class="sm" onclick="App.period('${o.s.id}','${o.p.key}')">رفع</button></td></tr>`).join('')}</table>`:'<div class="muted sm">لا توجد نوافذ مفتوحة حاليًا.</div>'}
+   <div class="note" style="margin-top:10px">الشهري: يُفتح الرفع ${state.settings.windows.monthly} أيام من بداية الشهر التالي. الأسبوعي: يومان بعد نهاية الأسبوع. الربعي والنصف سنوي: ${state.settings.windows.quarterly} أيام بعد نهاية الفترة. التسليم النهائي: من بداية الدورة حتى ${state.settings.windows.once} أيام بعد الموعد. الفترة الفائتة تُحتسب 0% ولا يعوّضها إنجاز لاحق.</div></div>
+   <div class="card"><h3>سلّم التقييم (ضوابط آلية تقييم الأداء 00_HUC_GD_007.01)</h3>${scaleTable()}</div>
+  </div>`;
+}
+function scaleTable(){const b=state.settings.bands;return `<table class="sm"><tr><th>الدرجة</th><th>التقدير</th><th>نسبة الإنجاز</th><th>شرط الإدارة الإضافي</th></tr>
+ <tr><td>${rateBadge(5)}</td><td></td><td>${b.r5}% فأعلى</td><td>${state.settings.gating?'منجز معتمد + مبادرة معتمدة':'—'}</td></tr>
+ <tr><td>${rateBadge(4)}</td><td></td><td>${b.r4}% – ${b.r5-1}%</td><td>${state.settings.gating?'مبادرة معتمدة ذات أثر على الإدارة':'—'}</td></tr>
+ <tr><td>${rateBadge(3)}</td><td></td><td>${b.r3}% – ${b.r4-1}%</td><td>—</td></tr>
+ <tr><td>${rateBadge(2)}</td><td></td><td>${b.r2}% – ${b.r3-1}%</td><td>—</td></tr>
+ <tr><td>${rateBadge(1)}</td><td></td><td>أقل من ${b.r2}%</td><td>—</td></tr></table>
+ <div class="xs muted" style="margin-top:6px">الدرجة النهائية = وزن الأهداف × درجة الأهداف + وزن الجدارات/المؤشرات العامة × درجتها (موظفون 50/50، مدراء ورؤساء أقسام 60/40، تنفيذيون 70/30). الدرجتان 5 و1 تتطلبان مبررات (البند 2.1.11). تُقارن النسبة بعد حذف الكسر (119.6% = 119%).</div>`}
+
+/* ---------- صفحة الموظف ---------- */
+function viewEmployee(v,t){
+  const s=stats(t),m=managerOf(t),self=v.id===t.id;
+  const tabs=[['goals','الأهداف والإنجاز'],['inits','المبادرات'],['achs','المنجزات'],['eval','التقييم']];
+  let body='';
+  if(S.tab==='inits')body=initSection(v,t,'inits');else if(S.tab==='achs')body=initSection(v,t,'achs');else if(S.tab==='eval')body=evalSection(v,t);else body=goalsSection(v,t,s);
+  return `<div class="card"><div class="row between"><div><h2>${esc(t.name)}</h2><div class="muted sm">${esc(t.title)} · ${esc(t.section||'')} · ${esc(brand(t.company).name)}</div><div class="xs muted">المدير المباشر: ${m?esc(m.name):'خارج النظام'} · الفئة: ${CAT_LBL[t.category]||'—'}</div></div>
+   ${!self?`<button class="sec sm" onclick="App.go('${canManage(v,t)?'team':'home'}')">رجوع</button>`:''}</div>
+   <div class="grid g5" style="margin-top:12px">
+    <div class="tile"><div class="k">الإنجاز حتى تاريخه</div><div class="v">${pctTxt(s.pct)}</div></div>
+    <div class="tile"><div class="k">مجموع أوزان الأهداف</div><div class="v" style="color:${s.wTot===100?'var(--ok)':'var(--bad)'}">${s.wTot}%</div></div>
+    <div class="tile"><div class="k">الرفع في الموعد</div><div class="v">${pctTxt(s.onTimePct)}</div></div>
+    <div class="tile"><div class="k">بانتظار المراجعة</div><div class="v">${s.pending+s.pendI}</div></div>
+    <div class="tile"><div class="k">فترات فائتة</div><div class="v" style="color:${s.missed?'var(--bad)':'inherit'}">${s.missed}</div></div>
+   </div></div>
+   <div class="tabs">${tabs.map(x=>`<a class="${S.tab===x[0]?'on':''}" onclick="App.tab('${x[0]}')">${x[1]}</a>`).join('')}</div>${body}`;
+}
+function goalsSection(v,t,s){
+  const gs=goalsOf(t.id),M=meta(t.id),edit=canEditGoals(v,t),mg=canManage(v,t)||(v.role==='admin'&&v.id===t.id);
+  let h=`<div class="row between" style="margin-bottom:10px"><div class="row">${M.locked?'<span class="pill p-ok">الأهداف معتمدة</span>':'<span class="pill p-warn">مسودة — غير معتمدة</span>'}
+   ${s.wTot!==100?`<span class="pill p-bad">مجموع الأوزان ${s.wTot}% (المطلوب 100%)</span>`:''}</div>
+   <div class="row">${edit?`<button class="sm" onclick="App.goalEdit('${t.id}')">+ هدف رئيسي</button>`:''}
+   ${mg&&!M.locked?`<button class="sm ok" onclick="App.lockGoals('${t.id}')" ${s.wTot!==100?'disabled':''}>اعتماد الأهداف</button>`:''}
+   ${mg&&M.locked?`<button class="sm sec" onclick="App.unlockGoals('${t.id}')">فتح للتعديل (بسبب موثق)</button>`:''}</div></div>`;
+  if(!gs.length)h+='<div class="card muted">لا توجد أهداف بعد.</div>';
+  for(const g of gs){const gp=s.perGoal[g.id],sw=g.subs.reduce((a,x)=>a+(+x.weight||0),0);
+    h+=`<div class="goal"><div class="gh"><div class="row between"><div><h3 style="margin:0">${esc(g.title)} <span class="pill p-pri">${g.weight}%</span></h3>
+      <div class="chips"><span class="pill">${t.company==='nwc'?'الهدف الاستراتيجي':'هدف الإدارة (استراتيجي)'}: ${esc(stratName(t.company,g.strat)||'غير مرتبط')}</span>${g.init?`<span class="pill">المبادرة: ${esc(initName(g.init))}</span>`:''}${sw!==+g.weight?`<span class="pill p-bad">أوزان الفرعية ${sw}% ≠ ${g.weight}%</span>`:''}</div></div>
+      <div class="row"><div style="text-align:center"><div class="xs muted">الإنجاز</div><b>${pctTxt(gp)}</b></div>${edit?`<button class="sm sec" onclick="App.goalEdit('${t.id}','${g.id}')">تعديل</button>`:''}</div></div></div>
+     <table class="sub-t"><tr><th style="width:24%">الهدف الفرعي</th><th>المؤشر / المستهدف / الدليل</th><th>الدورية</th><th>الوزن</th><th>الإنجاز</th><th style="width:34%">الفترات</th></tr>
+     ${g.subs.map(x=>{const r=x._r||subCalc(x,today());return `<tr><td><b>${esc(x.title)}</b></td><td>${esc(x.kpi)}<div class="xs muted">المستهدف: ${esc(x.target)}${x.method?' · الدليل: '+esc(x.method):''}</div></td><td>${FREQ_LBL[x.freq]}${x.freq==='once'?'<div class="xs muted">'+fdate(x.due)+'</div>':''}</td><td>${x.weight}%</td><td><b>${pctTxt(r.score)}</b>${r.missed?`<div class="xs" style="color:var(--bad)">${r.missed} فائتة</div>`:''}</td>
+      <td><div class="chips">${periodsFor(x).map(p=>{const [c,l]=chipOf(x,p);return `<span class="chip ${c}" title="${esc(p.label+' — '+l)}" onclick="App.period('${x.id}','${p.key}')">${esc(shortLbl(x,p))}</span>`}).join('')}</div></td></tr>`}).join('')}</table></div>`;
+  }
+  if(M.changes&&M.changes.length)h+=`<div class="card"><h4>سجل التعديلات المعتمدة على الأهداف</h4>${M.changes.map(c=>`<div class="sm">• ${fdate(c.ts.slice(0,10))} — ${esc(c.by)}: ${esc(c.reason)}</div>`).join('')}</div>`;
+  h+=`<div class="note">مفتاح الألوان: <span class="chip c-open">مفتوح للرفع</span> <span class="chip c-sub">بانتظار المراجعة</span> <span class="chip c-ok">معتمد</span> <span class="chip c-ret">مُعاد</span> <span class="chip c-miss">فائت = 0%</span> <span class="chip c-up">لم يُفتح بعد</span> — اضغط على أي فترة لعرضها أو الرفع أو المراجعة.</div>`;
+  return h;
+}
+function shortLbl(s,p){if(s.freq==='monthly')return p.label.split(' ')[0];if(s.freq==='weekly')return p.key.replace('W','أ');if(s.freq==='once')return 'تسليم';return p.key.replace('Q','ر').replace('H','ن')}
+
+/* ---------- محرر الأهداف ---------- */
+let draftSubs=[];
+function goalEdit(uid,gid){
+  const t=U(uid),v=me(),g=gid?state.goals.find(x=>x.id===gid):{title:'',weight:'',strat:'',init:'',subs:[]};
+  if(meta(uid).locked&&!(v.role==='admin'&&v.id===uid)&&!canManage(v,t)){toast('الأهداف معتمدة');return}
+  draftSubs=JSON.parse(JSON.stringify(g.subs.length?g.subs:[{id:nid(),title:'',kpi:'',target:'',method:'',weight:'',freq:'monthly',due:''}]));
+  const sl=stratList(t.company);
+  openModal(`<h3>${gid?'تعديل':'إضافة'} هدف رئيسي — ${esc(t.name)}</h3>
+   <div class="grid g3"><div style="grid-column:span 2"><label>الهدف الرئيسي</label><input id="g_t" value="${esc(g.title)}"></div><div><label>الوزن (%)</label><input id="g_w" type="number" value="${esc(g.weight)}" oninput="App.subSum()"></div></div>
+   <div class="grid g2"><div><label>${t.company==='nwc'?'الهدف الاستراتيجي للشركة (استراتيجية 2026–2030 V.02)':'هدف الإدارة 2027 (يُعامل كهدف استراتيجي)'}</label><select id="g_s"><option value="">— اختر —</option>${sl.map(x=>`<option value="${esc(x[0])}" ${x[0]===g.strat?'selected':''}>${esc(x[0]+' '+x[1])}</option>`).join('')}</select></div>
+   ${t.company==='nwc'?`<div><label>المبادرة الاستراتيجية (اختياري)</label><select id="g_i"><option value="">— لا يوجد —</option>${state.lists.init.map(x=>`<option value="${esc(x[0])}" ${x[0]===g.init?'selected':''}>${esc(x[0]+' — '+x[1])}</option>`).join('')}</select></div>`:'<div></div>'}</div>
+   ${meta(uid).locked?`<label>سبب التعديل (إلزامي — الأهداف معتمدة)</label><input id="g_r" placeholder="مثال: تعديل معتمد في نطاق الهدف بتاريخ ...">`:''}
+   <h4 style="margin-top:14px">الأهداف الفرعية <span id="subsum" class="pill"></span></h4><div id="subs"></div>
+   <button class="sm sec" onclick="App.subAdd()">+ هدف فرعي</button>
+   <div id="gerr" style="margin-top:8px"></div>
+   <div class="row between" style="margin-top:14px"><div>${gid?`<button class="bad sm" onclick="App.goalDel('${gid}')">حذف الهدف</button>`:''}</div><div class="row"><button class="sec" onclick="App.close()">إلغاء</button><button onclick="App.goalSave('${uid}','${gid||''}')">حفظ</button></div></div>`);
+  drawSubs();
+}
+function drawSubs(){
+  $('subs').innerHTML=draftSubs.map((x,i)=>`<div class="card" style="margin-bottom:8px;padding:10px"><div class="grid g3">
+   <div><label>الهدف الفرعي / الالتزام</label><input value="${esc(x.title)}" oninput="App.subSet(${i},'title',this.value)"></div>
+   <div><label>مؤشر الأداء</label><input value="${esc(x.kpi)}" oninput="App.subSet(${i},'kpi',this.value)"></div>
+   <div><label>المستهدف</label><input value="${esc(x.target)}" oninput="App.subSet(${i},'target',this.value)"></div>
+   <div><label>طريقة القياس / دليل التحقق</label><input value="${esc(x.method)}" oninput="App.subSet(${i},'method',this.value)"></div>
+   <div class="row" style="gap:6px"><div style="flex:1"><label>الدورية</label><select onchange="App.subSet(${i},'freq',this.value);App.redrawSubs()">${Object.keys(FREQ_LBL).map(k=>`<option value="${k}" ${x.freq===k?'selected':''}>${FREQ_LBL[k]}</option>`).join('')}</select></div>
+     ${x.freq==='once'?`<div style="flex:1"><label>موعد التسليم</label><input type="date" value="${esc(x.due)}" min="${state.settings.cycleStart}" max="${state.settings.cycleEnd}" onchange="App.subSet(${i},'due',this.value)"></div>`:''}</div>
+   <div class="row" style="gap:6px"><div style="flex:1"><label>الوزن (%)</label><input type="number" step="0.5" value="${esc(x.weight)}" oninput="App.subSet(${i},'weight',this.value);App.subSum()"></div><button class="ghost" style="margin-top:22px;color:var(--bad)" onclick="App.subDel(${i})">حذف</button></div>
+  </div></div>`).join('');subSum();
+}
+function subSum(){const s=draftSubs.reduce((a,x)=>a+(+x.weight||0),0),w=+val('g_w')||0,e=$('subsum');if(e){e.textContent=`مجموع أوزان الفرعية ${s}% من ${w}%`;e.className='pill '+(Math.abs(s-w)<0.01&&w?'p-ok':'p-bad')}}
+function goalSave(uid,gid){
+  const v=me(),t=U(uid),title=val('g_t'),w=+val('g_w'),st=val('g_s'),ini=$('g_i')?val('g_i'):'',err=[];
+  if(!title)err.push('اكتب عنوان الهدف الرئيسي');if(!(w>0))err.push('حدد وزن الهدف');
+  draftSubs.forEach((x,i)=>{if(!x.title)err.push(`الهدف الفرعي ${i+1}: العنوان مطلوب`);if(!(+x.weight>0))err.push(`الهدف الفرعي ${i+1}: الوزن مطلوب`);if(x.freq==='once'&&!x.due)err.push(`الهدف الفرعي ${i+1}: موعد التسليم مطلوب`)});
+  const s=draftSubs.reduce((a,x)=>a+(+x.weight||0),0);if(Math.abs(s-w)>0.01)err.push(`مجموع أوزان الأهداف الفرعية (${s}%) يجب أن يساوي وزن الهدف الرئيسي (${w}%)`);
+  const others=goalsOf(uid).filter(g=>g.id!==gid).reduce((a,g)=>a+(+g.weight||0),0);if(others+w>100)err.push(`مجموع أوزان الأهداف الرئيسية سيصبح ${others+w}% (الحد 100%)`);
+  if(!st)err.push('اختر الربط الاستراتيجي');
+  const locked=meta(uid).locked,reason=locked?val('g_r'):'';if(locked&&!reason)err.push('سبب التعديل إلزامي لأن الأهداف معتمدة');
+  if(err.length){$('gerr').innerHTML=`<div class="errbox">${err.map(esc).join('<br>')}</div>`;return}
+  const subs=draftSubs.map(({_r,...x})=>({...x,weight:+x.weight}));
+  if(gid){const g=state.goals.find(x=>x.id===gid);Object.assign(g,{title,weight:w,strat:st,init:ini,subs})}else state.goals.push({id:nid(),userId:uid,title,weight:w,strat:st,init:ini,subs});
+  if(locked)meta(uid).changes.push({ts:nowTs(),by:v.name,reason:`${gid?'تعديل':'إضافة'} «${title}»: ${reason}`});
+  log(`${gid?'تعديل':'إضافة'} هدف «${title}» للموظف ${t.name}`);save();closeModal();render();toast('تم الحفظ');
+}
+
+/* ---------- نافذة الفترة: رفع / مراجعة ---------- */
+function findSub(subId){for(const g of state.goals){const s=g.subs.find(x=>x.id===subId);if(s)return {g,s}}return {}}
+function period(subId,pk){
+  const {g,s}=findSub(subId);if(!s)return;const t=U(g.userId),v=me(),p=periodsFor(s).find(x=>x.key===pk),w=winState(s,p),hist=updsOf(subId,pk),up=hist[hist.length-1];
+  const own=v.id===t.id,canSub=own&&w==='open'&&(!up||up.status==='returned'),rev=canReview(v,t)&&up&&up.status==='submitted';
+  let h=`<div class="row between"><h3>${esc(s.title)} — ${esc(p.label)}</h3><button class="ghost" onclick="App.close()">✕</button></div>
+   <div class="muted sm">${esc(t.name)} · ${esc(g.title)} · وزن ${s.weight}% · ${FREQ_LBL[s.freq]}</div>
+   <div class="grid g3" style="margin:10px 0"><div class="note"><b>الفترة</b><br>${fdate(p.start)} – ${fdate(p.end)}</div><div class="note"><b>نافذة الرفع</b><br>${fdate(p.winOpen)} – ${fdate(closeOf(s,p))}</div><div class="note"><b>المستهدف</b><br>${esc(s.target)}<div class="xs muted">${esc(s.method)}</div></div></div>`;
+  if(hist.length)h+=hist.map(u=>updCard(u,v,t)).join('');
+  else h+=`<div class="muted sm">لا يوجد رفع لهذه الفترة. ${w==='closed'?'<b style="color:var(--bad)">انتهت النافذة — تُحتسب 0%</b>':''}</div>`;
+  if(canSub)h+=`<div class="hr"></div><h4>رفع الإنجاز</h4>
+   <label>وصف مختصر للإنجاز</label><textarea id="u_d"></textarea>
+   <div class="grid g3"><div><label>القيمة المحققة (اختياري)</label><input id="u_v" placeholder="مثال: 100% من العينات"></div><div><label>نسبة الإنجاز الذاتية (%)</label><input id="u_p" type="number" min="0" max="${state.settings.maxPct}" value="100"></div><div><label>تاريخ التنفيذ</label><input id="u_dt" type="date" value="${p.end<=today()?p.end:today()}"></div></div>
+   <label>روابط الشواهد (رابط في كل سطر — يُفضّل رابط OneDrive/SharePoint)</label><textarea id="u_l" style="min-height:50px" placeholder="https://..."></textarea>
+   <label>مرفقات (حتى 600 كيلوبايت للملف في النموذج الأولي)</label><input id="u_f" type="file" multiple>
+   <div id="uerr"></div><div class="row" style="margin-top:10px"><button onclick="App.submitUpd('${subId}','${pk}')">رفع للمراجعة</button></div>`;
+  else if(own&&w==='upcoming')h+=`<div class="note" style="margin-top:10px">يُفتح الرفع في ${fdate(p.winOpen)}.</div>`;
+  else if(own&&w==='closed'&&(!up||up.status==='returned'))h+=`<div class="errbox" style="margin-top:10px">انتهت نافذة الرفع. يمكن لمديرك فتح استثناء موثق عند وجود مبرر.</div>`;
+  if(rev)h+=`<div class="hr"></div><h4>المراجعة والاعتماد</h4><div class="grid g2"><div><label>نسبة الإنجاز المعتمدة (%)</label><input id="r_p" type="number" min="0" max="${state.settings.maxPct}" value="${up.selfPct}"></div><div></div></div>
+   <label>تعليق المدير</label><textarea id="r_c"></textarea><div class="row" style="margin-top:8px"><button class="ok" onclick="App.reviewUpd('${up.id}','approved')">اعتماد</button><button class="bad" onclick="App.reviewUpd('${up.id}','returned')">إعادة للموظف</button></div>`;
+  if(canManage(v,t)&&w!=='open'&&p.winClose<today())h+=`<div class="hr"></div><details><summary class="sm" style="cursor:pointer;color:var(--pri);font-weight:700">فتح نافذة استثنائية (موثّق)</summary><div class="grid g2"><div><label>مفتوحة حتى</label><input id="x_u" type="date" value="${addDays(today(),3)}"></div><div><label>السبب</label><input id="x_r"></div></div><button class="sm" style="margin-top:8px" onclick="App.addExc('${subId}','${pk}')">فتح</button></details>`;
+  openModal(h);
+}
+function evList(x){const l=(x.links||[]).map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.length>60?u.slice(0,60)+'…':u)}</a>`),f=(x.files||[]).map(f=>f.type&&f.type.startsWith('image/')?`<img src="${f.data}" style="max-height:80px;border-radius:6px;border:1px solid var(--line)" title="${esc(f.name)}">`:`<span class="pill">📎 ${esc(f.name)}</span>`);return l.length||f.length?`<div class="ev sm">${[...l,...f].join(' · ')}</div>`:''}
+function updCard(u,v,t){
+  const cls={approved:'p-ok',submitted:'p-warn',returned:'p-bad'}[u.status],lbl={approved:'معتمد',submitted:'بانتظار المراجعة',returned:'مُعاد'}[u.status];
+  return `<div class="card" style="margin-bottom:8px"><div class="row between"><span class="pill ${cls}">${lbl}${u.status==='approved'?' — '+r1(u.approvedPct)+'%':''}</span><span class="xs muted">رُفع ${fdate(u.ts.slice(0,10))} · ذاتي ${u.selfPct}%</span></div>
+   <div style="margin-top:6px">${esc(u.desc)}</div>${u.value?`<div class="sm muted">القيمة: ${esc(u.value)}</div>`:''}<div class="xs muted">تاريخ التنفيذ: ${fdate(u.doneDate)}</div>${evList(u)}
+   ${u.mgrComment?`<div class="note" style="margin-top:6px"><b>${esc(u.reviewer||'المدير')}:</b> ${esc(u.mgrComment)}</div>`:''}
+   ${(u.comments||[]).map(c=>`<div class="xs" style="margin-top:4px">💬 <b>${esc(c.by)}</b> (${fdate(c.ts.slice(0,10))}): ${esc(c.text)}</div>`).join('')}
+   ${canView(v,t)&&v.id!==t.id?`<div class="row" style="margin-top:6px"><input id="cm_${u.id}" placeholder="ملاحظة متابعة..." style="flex:1"><button class="sm sec" onclick="App.comment('${u.id}')">إضافة</button></div>`:''}</div>`;
+}
+async function readFiles(inp){const out=[],err=[];for(const f of (inp&&inp.files)||[]){if(f.size>600*1024){err.push(`${f.name}: أكبر من 600 كيلوبايت — استخدم رابط OneDrive`);continue}out.push({name:f.name,type:f.type,data:await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f)})})}return {out,err}}
+async function submitUpd(subId,pk){
+  const {g,s}=findSub(subId),d=val('u_d'),p=+val('u_p'),links=val('u_l').split('\n').map(x=>x.trim()).filter(Boolean),{out,err}=await readFiles($('u_f'));
+  if(!d)err.push('الوصف مطلوب');if(!links.length&&!out.length)err.push('أرفق شاهدًا واحدًا على الأقل (رابط أو ملف)');if(!(p>=0&&p<=state.settings.maxPct))err.push('نسبة غير صحيحة');
+  if(err.length){$('uerr').innerHTML=`<div class="errbox">${err.map(esc).join('<br>')}</div>`;return}
+  state.updates.push({id:nid(),subId,goalId:g.id,userId:g.userId,periodKey:pk,desc:d,value:val('u_v'),selfPct:p,doneDate:val('u_dt'),links,files:out,status:'submitted',approvedPct:null,ts:(state.settings.simDate?state.settings.simDate+'T12:00:00Z':nowTs()),comments:[]});
+  log(`رفع إنجاز «${s.title}» — ${pk}`);save();closeModal();render();toast('تم الرفع للمراجعة');
+}
+function reviewUpd(id,status){const u=state.updates.find(x=>x.id===id),c=val('r_c'),p=+val('r_p');if(status==='returned'&&!c){toast('اكتب سبب الإعادة');return}
+  Object.assign(u,{status,approvedPct:status==='approved'?Math.min(p,state.settings.maxPct):null,mgrComment:c,reviewer:me().name,reviewTs:nowTs()});log(`${status==='approved'?'اعتماد':'إعادة'} إنجاز (${U(u.userId).name})`);save();closeModal();render();toast('تم')}
+function comment(id){const u=state.updates.find(x=>x.id===id),t=val('cm_'+id);if(!t)return;(u.comments=u.comments||[]).push({by:me().name,text:t,ts:nowTs()});save();const {s}=findSub(u.subId);period(u.subId,u.periodKey)}
+function addExc(subId,pk){const until=val('x_u'),r=val('x_r');if(!r){toast('السبب مطلوب');return}state.exceptions.push({id:nid(),subId,periodKey:pk,from:today(),until,reason:r,by:me().name,ts:nowTs()});log(`فتح نافذة استثنائية حتى ${until}: ${r}`);save();closeModal();render();toast('تم فتح النافذة')}
+
+/* ---------- المبادرات والمنجزات ---------- */
+const ACH_DEF='المنجز: عمل غير مسبوق، له أثر على مستوى الشركة — وليس أداءً للمهام المعتادة أو تحقيقًا للمستهدف.';
+const INIT_DEF='المبادرة: عمل يبادر به الموظف خارج أهدافه المعتمدة أو يتجاوزها، ويُقاس أثره (العائد) على مستوى الإدارة.';
+function initSection(v,t,kind){
+  const arr=(kind==='inits'?state.initiatives:state.achievements).filter(x=>x.userId===t.id),own=v.id===t.id;
+  return `<div class="row between" style="margin-bottom:10px"><div class="note" style="flex:1">${kind==='inits'?INIT_DEF:ACH_DEF}</div>${own?`<button onclick="App.initForm('${kind}')">+ ${kind==='inits'?'مبادرة':'منجز'} جديد</button>`:''}</div>
+  ${arr.length?arr.map(x=>initCard(x,v,kind)).join(''):'<div class="card muted">لا يوجد.</div>'}`;
+}
+function initCard(x,v,kind){
+  const t=U(x.userId),cls={approved:'p-ok',submitted:'p-warn',returned:'p-bad'}[x.status],lbl={approved:'معتمد',submitted:'بانتظار المراجعة',returned:'مُعاد'}[x.status];
+  return `<div class="card" style="margin-bottom:10px"><div class="row between"><h3 style="margin:0">${esc(x.name)}</h3><span class="pill ${cls}">${lbl}</span></div>
+   <div class="xs muted">${esc(t.name)} · ${fdate(x.date)}</div>
+   ${kind==='inits'?`<div class="grid g4 sm" style="margin-top:8px"><div><b>العائد:</b> ${esc(x.benefit)}</div><div><b>المشاركة:</b> ${x.participation==='direct'?'مباشرة':'غير مباشرة'}</div><div><b>نسبة المشاركة:</b> ${x.share}%</div><div><b>أثر على الإدارة:</b> ${x.deptImpact?'<span class="pill p-ok">نعم</span>':'<span class="pill">لا</span>'}</div></div>
+   <div class="sm" style="margin-top:6px"><b>التعريف:</b> ${esc(x.desc)}</div>${x.impact?`<div class="sm"><b>الأثر:</b> ${esc(x.impact)}</div>`:''}`
+   :`<div class="sm" style="margin-top:6px"><b>الوصف:</b> ${esc(x.desc)}</div><div class="sm"><b>لماذا غير مسبوق:</b> ${esc(x.unprecedented)}</div><div class="sm"><b>الأثر على مستوى الشركة:</b> ${esc(x.impact)}</div>`}
+   ${evList(x)}${x.mgrComment?`<div class="note" style="margin-top:6px"><b>${esc(x.reviewer||'المدير')}:</b> ${esc(x.mgrComment)}</div>`:''}
+   ${canReview(v,t)&&x.status==='submitted'?`<div class="row" style="margin-top:8px"><input id="ic_${x.id}" placeholder="تعليق" style="flex:1">${kind==='inits'?`<label class="row sm" style="margin:0"><input type="checkbox" id="id_${x.id}" ${x.deptImpact?'checked':''} style="width:auto"> أثر على الإدارة</label>`:''}<button class="sm ok" onclick="App.reviewInit('${kind}','${x.id}','approved')">اعتماد</button><button class="sm bad" onclick="App.reviewInit('${kind}','${x.id}','returned')">إعادة</button></div>`:''}
+   ${v.id===t.id&&x.status==='returned'?`<button class="sm sec" style="margin-top:6px" onclick="App.initForm('${kind}','${x.id}')">تعديل وإعادة الرفع</button>`:''}</div>`;
+}
+function initForm(kind,id){
+  const x=id?(kind==='inits'?state.initiatives:state.achievements).find(y=>y.id===id):{name:'',date:today(),benefit:'',participation:'direct',share:100,desc:'',deptImpact:true,impact:'',unprecedented:'',links:[]};
+  openModal(`<h3>${kind==='inits'?'مبادرة':'منجز'} ${id?'— تعديل':'جديد'}</h3><div class="note">${kind==='inits'?INIT_DEF:ACH_DEF}</div>
+   <div class="grid g2"><div><label>اسم ${kind==='inits'?'المبادرة':'المنجز'}</label><input id="i_n" value="${esc(x.name)}"></div><div><label>التاريخ</label><input id="i_dt" type="date" value="${esc(x.date)}"></div></div>
+   ${kind==='inits'?`<div class="grid g3"><div><label>العائد منها</label><input id="i_b" value="${esc(x.benefit)}" placeholder="وفر/تحسن/خفض..."></div><div><label>نوع المشاركة</label><select id="i_p"><option value="direct" ${x.participation==='direct'?'selected':''}>مباشرة</option><option value="indirect" ${x.participation==='indirect'?'selected':''}>غير مباشرة</option></select></div><div><label>نسبة مشاركتك (%)</label><input id="i_s" type="number" min="1" max="100" value="${esc(x.share)}"></div></div>
+   <label>تعريف بالمبادرة</label><textarea id="i_d">${esc(x.desc)}</textarea>
+   <label class="row" style="gap:6px"><input type="checkbox" id="i_di" ${x.deptImpact?'checked':''} style="width:auto"> لها أثر على مستوى الإدارة</label><label>وصف الأثر على الإدارة</label><textarea id="i_im">${esc(x.impact)}</textarea>`
+   :`<label>وصف المنجز</label><textarea id="i_d">${esc(x.desc)}</textarea><label>لماذا يُعد غير مسبوق؟</label><textarea id="i_u">${esc(x.unprecedented)}</textarea><label>الأثر على مستوى الشركة</label><textarea id="i_im">${esc(x.impact)}</textarea>`}
+   <label>روابط الشواهد (رابط في كل سطر)</label><textarea id="i_l" style="min-height:50px">${esc((x.links||[]).join('\n'))}</textarea><label>مرفقات</label><input id="i_f" type="file" multiple>
+   <div id="ierr"></div><div class="row" style="margin-top:12px"><button onclick="App.initSave('${kind}','${id||''}')">رفع للمراجعة</button><button class="sec" onclick="App.close()">إلغاء</button></div>`);
+}
+async function initSave(kind,id){
+  const {out,err}=await readFiles($('i_f')),o={name:val('i_n'),date:val('i_dt'),desc:val('i_d'),impact:val('i_im'),links:val('i_l').split('\n').map(x=>x.trim()).filter(Boolean)};
+  if(kind==='inits')Object.assign(o,{benefit:val('i_b'),participation:val('i_p'),share:+val('i_s'),deptImpact:$('i_di').checked});else o.unprecedented=val('i_u');
+  if(!o.name)err.push('الاسم مطلوب');if(!o.desc)err.push('الوصف مطلوب');if(kind==='achs'&&(!o.unprecedented||!o.impact))err.push('المنجز يتطلب بيان عدم السبق والأثر على مستوى الشركة');if(kind==='inits'&&!o.benefit)err.push('العائد مطلوب');if(kind==='inits'&&!(o.share>0&&o.share<=100))err.push('نسبة المشاركة بين 1 و100');
+  if(!o.links.length&&!out.length)err.push('أرفق شاهدًا واحدًا على الأقل');
+  if(err.length){$('ierr').innerHTML=`<div class="errbox">${err.map(esc).join('<br>')}</div>`;return}
+  const arr=kind==='inits'?state.initiatives:state.achievements;
+  if(id){const x=arr.find(y=>y.id===id);Object.assign(x,o,{files:[...(x.files||[]),...out],status:'submitted',ts:nowTs()})}else arr.push({id:nid(),userId:me().id,...o,files:out,status:'submitted',ts:nowTs()});
+  log(`رفع ${kind==='inits'?'مبادرة':'منجز'}: ${o.name}`);save();closeModal();render();toast('تم الرفع للمراجعة');
+}
+function reviewInit(kind,id,status){const x=(kind==='inits'?state.initiatives:state.achievements).find(y=>y.id===id),c=val('ic_'+id);if(status==='returned'&&!c){toast('اكتب سبب الإعادة');return}
+  x.status=status;x.mgrComment=c;x.reviewer=me().name;if(kind==='inits'&&$('id_'+id))x.deptImpact=$('id_'+id).checked;log(`${status==='approved'?'اعتماد':'إعادة'} ${kind==='inits'?'مبادرة':'منجز'}: ${x.name}`);save();render();toast('تم')}
+function viewInitList(v,kind){
+  const ids=new Set([v.id,...scopeUsers(v,S.company).map(u=>u.id)]),arr=(kind==='inits'?state.initiatives:state.achievements).filter(x=>ids.has(x.userId));
+  return `<div class="row between"><h2>${kind==='inits'?'المبادرات':'المنجزات'}</h2><button onclick="App.initForm('${kind}')">+ ${kind==='inits'?'مبادرة':'منجز'} جديد</button></div>
+   <div class="note" style="margin:10px 0">${kind==='inits'?INIT_DEF:ACH_DEF}</div>${arr.length?arr.map(x=>initCard(x,v,kind)).join(''):'<div class="card muted">لا يوجد.</div>'}`;
+}
+
+/* ---------- التقييم ---------- */
+function evalSection(v,t){
+  return ['mid','annual'].map(ph=>{
+    const st=state.settings,c=evalCalc(t,ph),ev=c.ev,mg=canReview(v,t)&&v.id!==t.id||(v.role==='admin'&&v.id===t.id&&!managerOf(t)),due=today()>(ph==='mid'?st.midEnd:st.cycleEnd);
+    const title=ph==='mid'?`التقييم نصف السنوي (حتى ${fdate(st.midEnd)})`:`التقييم السنوي (حتى ${fdate(st.cycleEnd)})`;
+    if(c.none)return `<div class="card" style="margin-bottom:12px"><h3>${title}</h3><div class="muted">لا توجد أهداف فرعية مستحقة للتقييم بعد.</div></div>`;
+    const s=c.s;
+    return `<div class="card" style="margin-bottom:12px"><div class="row between"><h3>${title}</h3>${ev.finalized?'<span class="pill p-ok">معتمد نهائيًا</span>':due?'<span class="pill p-warn">مستحق</span>':'<span class="pill">استرشادي حتى تاريخه</span>'}</div>
+     <div class="grid g4" style="margin-top:8px"><div class="tile"><div class="k">إنجاز الأهداف</div><div class="v">${pctTxt(s.pct)}</div><div class="xs">درجة الأهداف: ${c.gr}</div></div>
+      <div class="tile"><div class="k">المبادرات المعتمدة</div><div class="v">${s.inits}</div><div class="xs">منها بأثر على الإدارة: ${s.initsDept}</div></div>
+      <div class="tile"><div class="k">المنجزات المعتمدة</div><div class="v">${s.achs}</div></div>
+      <div class="tile"><div class="k">الالتزام بالرفع</div><div class="v">${pctTxt(s.onTimePct)}</div><div class="xs">فائتة: ${s.missed}</div></div></div>
+     <div class="row" style="margin-top:12px;gap:18px;align-items:center">${rateBadge(c.rating,true)}<div><b>${RATE_LBL[c.rating]}</b><div class="sm muted">الدرجة المحسوبة: ${c.score.toFixed(2)} = ${c.gw}% × ${c.gr} (الأهداف) ${c.comp?`+ ${c.ow}% × ${c.comp} (الجدارات/المؤشرات العامة)`:`— <span style="color:var(--warn)">لم تُدخل درجة الجدارات/المؤشرات العامة (${c.ow}%) بعد</span>`}</div>
+      ${c.notes.map(n=>`<div class="xs" style="color:var(--warn)">⚠ ${esc(n)}</div>`).join('')}</div></div>
+     <div class="grid g2" style="margin-top:10px">
+      <div><label>درجة الجدارات القيادية / مؤشرات الأداء العامة (1–5) — يحددها المدير</label><select id="ev_c_${ph}" ${!mg||ev.finalized?'disabled':''} onchange="App.evSet('${t.id}','${ph}','comp',this.value)"><option value="">—</option>${[5,4,3,2,1].map(n=>`<option value="${n}" ${+ev.comp===n?'selected':''}>${n} — ${RATE_LBL[n]}</option>`).join('')}</select></div>
+      <div><label>مبررات التقييم ${c.rating===5||c.rating===1?'<b style="color:var(--bad)">(إلزامية للدرجة '+c.rating+')</b>':''}</label><textarea id="ev_j_${ph}" ${!mg||ev.finalized?'disabled':''} onchange="App.evSet('${t.id}','${ph}','just',this.value)">${esc(ev.just)}</textarea></div></div>
+     ${ph==='mid'?`<label>أسباب التعثر والإجراءات التصحيحية للنصف الثاني</label><textarea ${!mg||ev.finalized?'disabled':''} onchange="App.evSet('${t.id}','${ph}','gaps',this.value)">${esc(ev.gaps)}</textarea>`:''}
+     <div class="row" style="margin-top:10px">${mg&&!ev.finalized?`<button class="ok" ${due?'':'disabled title="يتاح بعد نهاية الفترة"'} onclick="App.evFinal('${t.id}','${ph}')">اعتماد التقييم</button>`:''}
+      ${mg&&ev.finalized&&v.role==='admin'?`<button class="sec sm" onclick="App.evReopen('${t.id}','${ph}')">إعادة فتح</button>`:''}
+      ${v.id===t.id&&ev.finalized&&!ev.ack?`<button class="sec" onclick="App.evAck('${t.id}','${ph}')">اطلعت على التقييم</button>`:''}${ev.ack?`<span class="pill p-ok">اطلع الموظف ${fdate(ev.ack.slice(0,10))}</span>`:''}
+      ${ev.finalized?`<span class="xs muted">اعتمده ${esc(ev.by)} في ${fdate(ev.finalTs.slice(0,10))} — الدرجة ${ev.finalRating}</span>`:''}</div></div>`}).join('');
+}
+function evSet(uid,ph,k,v){getEval(uid,ph)[k]=v;save();if(k==='comp')render()}
+function evFinal(uid,ph){const t=U(uid),c=evalCalc(t,ph),ev=c.ev;if(!ev.comp){toast('أدخل درجة الجدارات/المؤشرات العامة');return}if((c.rating===5||c.rating===1)&&!ev.just){toast('المبررات إلزامية للدرجة '+c.rating);return}
+  Object.assign(ev,{finalized:true,finalRating:c.rating,finalPct:c.s.pct,by:me().name,finalTs:nowTs()});log(`اعتماد تقييم ${ph==='mid'?'نصف سنوي':'سنوي'} لـ ${t.name}: ${c.rating}`);save();render();toast('تم الاعتماد')}
+function evReopen(uid,ph){const ev=getEval(uid,ph);ev.finalized=false;ev.ack=null;log('إعادة فتح تقييم '+U(uid).name);save();render()}
+function evAck(uid,ph){getEval(uid,ph).ack=nowTs();save();render()}
+
+/* ---------- المراجعات ---------- */
+function pendingReviews(v){
+  const ids=new Set(reviewables(v).filter(t=>t.company===S.company||v.role==='admin').map(t=>t.id)),out=[];
+  state.updates.filter(u=>u.status==='submitted'&&ids.has(u.userId)).forEach(u=>out.push({type:'upd',x:u}));
+  state.initiatives.filter(u=>u.status==='submitted'&&ids.has(u.userId)).forEach(u=>out.push({type:'inits',x:u}));
+  state.achievements.filter(u=>u.status==='submitted'&&ids.has(u.userId)).forEach(u=>out.push({type:'achs',x:u}));
+  return out;
+}
+function viewReviews(v){
+  const p=pendingReviews(v);
+  return `<h2>المراجعات المعلقة (${p.length})</h2><div class="note" style="margin-bottom:10px">تشمل رفع الإنجاز والمبادرات والمنجزات لمن تملك صلاحية اعتمادها. أصحاب الإشراف على العقود يمكنهم إضافة ملاحظات متابعة دون اعتماد.</div>
+  ${p.length?`<table><tr><th>الموظف</th><th>النوع</th><th>البند</th><th>التاريخ</th><th></th></tr>${p.map(r=>{const t=U(r.x.userId);if(r.type==='upd'){const {s}=findSub(r.x.subId);if(!s)return '';const per=periodsFor(s).find(z=>z.key===r.x.periodKey);return `<tr><td>${esc(t.name)}</td><td><span class="pill">إنجاز</span></td><td>${esc(s.title)}<div class="xs muted">${esc(per?per.label:'')}</div></td><td class="sm">${fdate(r.x.ts.slice(0,10))}</td><td><button class="sm" onclick="App.period('${r.x.subId}','${r.x.periodKey}')">مراجعة</button></td></tr>`}
+   return `<tr><td>${esc(t.name)}</td><td><span class="pill p-pri">${r.type==='inits'?'مبادرة':'منجز'}</span></td><td>${esc(r.x.name)}</td><td class="sm">${fdate(r.x.date)}</td><td><button class="sm" onclick="S.tab='${r.type}';App.go('emp','${t.id}')">مراجعة</button></td></tr>`}).join('')}</table>`:'<div class="card muted">لا توجد مراجعات معلقة.</div>'}`;
+}
+
+/* ---------- الفريق ---------- */
+function viewTeam(v){
+  const co=S.allCo&&v.role==='admin'?'all':S.company,list=scopeUsers(v,co).filter(u=>!S.q||u.name.includes(S.q)||(u.section||'').includes(S.q));
+  return `<div class="row between"><h2>الموظفون (${list.length})</h2><div class="row">${v.role==='admin'?`<label class="row sm" style="margin:0"><input type="checkbox" style="width:auto" ${S.allCo?'checked':''} onchange="S.allCo=this.checked;App.render()"> جميع الشركات</label>`:''}<input placeholder="بحث بالاسم أو القسم" value="${esc(S.q)}" style="width:220px" onchange="S.q=this.value;App.render()"></div></div>
+  ${empTable(v,list)}`;
+}
+function empTable(v,list){
+  return `<div class="card" style="padding:0;overflow:auto;margin-top:10px"><table><tr><th>الموظف</th><th>الشركة / القسم</th><th>المدير</th><th>الأوزان</th><th>الإنجاز</th><th>التقدير المتوقع</th><th>الرفع في الموعد</th><th>مبادرات/منجزات</th><th>معلق</th><th>صلاحيتك</th></tr>
+  ${list.map(t=>{const s=stats(t),c=evalCalc(t,today()>state.settings.midEnd?'annual':'mid'),m=managerOf(t);return `<tr class="click" onclick="S.tab='goals';App.go('emp','${t.id}')"><td><b>${esc(t.name)}</b><div class="xs muted">${esc(t.title)}</div></td><td class="sm">${esc(brand(t.company).name)}<div class="xs muted">${esc(t.section||'')}</div></td><td class="sm">${m?esc(m.name):'—'}</td>
+   <td><span class="pill ${s.wTot===100?'p-ok':'p-bad'}">${s.wTot}%</span>${meta(t.id).locked?'':'<div class="xs muted">مسودة</div>'}</td><td><b>${pctTxt(s.pct)}</b><div class="bar" style="width:80px"><i style="width:${Math.min(100,s.pct||0)}%"></i></div></td><td>${c.none?'—':rateBadge(c.rating)}</td><td>${pctTxt(s.onTimePct)}${s.missed?`<div class="xs" style="color:var(--bad)">${s.missed} فائتة</div>`:''}</td><td>${s.inits} / ${s.achs}</td><td>${s.pending+s.pendI?`<span class="pill p-warn">${s.pending+s.pendI}</span>`:'—'}</td><td class="xs">${canManage(v,t)?'إدارة واعتماد':'متابعة'}</td></tr>`}).join('')}</table></div>`;
+}
+
+/* ---------- لوحة المعلومات ---------- */
+function viewDash(v){
+  const co=S.allCo&&v.role==='admin'?'all':S.company,list=scopeUsers(v,co).concat(v.role==='admin'||co==='all'?[]:[]);
+  const rows=list.map(t=>({t,s:stats(t),c:evalCalc(t,today()>state.settings.midEnd?'annual':'mid')}));
+  const withPct=rows.filter(r=>r.s.pct!=null),avg=withPct.length?withPct.reduce((a,r)=>a+r.s.pct,0)/withPct.length:null;
+  const due=rows.reduce((a,r)=>a+r.s.due,0),ot=rows.reduce((a,r)=>a+r.s.onTime,0),pend=rows.reduce((a,r)=>a+r.s.pending+r.s.pendI,0),miss=rows.reduce((a,r)=>a+r.s.missed,0);
+  const wOk=rows.filter(r=>r.s.wTot===100).length,locked=rows.filter(r=>meta(r.t.id).locked).length;
+  const dist={1:0,2:0,3:0,4:0,5:0};rows.forEach(r=>{if(!r.c.none)dist[r.c.rating]++});const nR=Object.values(dist).reduce((a,b)=>a+b,0);
+  const groups={};rows.forEach(r=>{const k=co==='all'?brand(r.t.company).name:(r.t.section||'—');(groups[k]=groups[k]||[]).push(r)});
+  pendingCharts.push(()=>{if(!window.Chart)return;
+    charts.push(new Chart($('ch1'),{type:'bar',data:{labels:[1,2,3,4,5].map(n=>n+' '+RATE_LBL[n]),datasets:[{label:'التوزيع الفعلي %',data:[1,2,3,4,5].map(n=>nR?dist[n]/nR*100:0),backgroundColor:[1,2,3,4,5].map(n=>RATE_CLR[n])},{label:'منحنى السياسة %',data:[1,2,3,4,5].map(n=>CURVE[n]),backgroundColor:'rgba(120,130,140,.25)',borderColor:'#7a8794',borderWidth:1}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'Tajawal'}}}},scales:{x:{ticks:{font:{family:'Tajawal'}}},y:{beginAtZero:true,ticks:{callback:x=>x+'%'}}}}}));
+    const gk=Object.keys(groups);charts.push(new Chart($('ch2'),{type:'bar',data:{labels:gk,datasets:[{label:'متوسط الإنجاز %',data:gk.map(k=>{const a=groups[k].filter(r=>r.s.pct!=null);return a.length?r1(a.reduce((x,r)=>x+r.s.pct,0)/a.length):0}),backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--acc').trim()},{label:'الرفع في الموعد %',data:gk.map(k=>{const d=groups[k].reduce((x,r)=>x+r.s.due,0),o=groups[k].reduce((x,r)=>x+r.s.onTime,0);return d?r1(o/d*100):0}),backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--pri').trim()}]},options:{indexAxis:'y',plugins:{legend:{position:'bottom',labels:{font:{family:'Tajawal'}}}},scales:{y:{ticks:{font:{family:'Tajawal'}}},x:{beginAtZero:true}}}}));
+  });
+  const perCo=v.role==='admin'&&co==='all'?`<div class="grid g3" style="margin-top:14px">${CO_KEYS.map(k=>{const rs=rows.filter(r=>r.t.company===k),a=rs.filter(r=>r.s.pct!=null);return `<div class="card" style="border-top:5px solid ${brand(k).pri}"><h3 style="color:${brand(k).pri}">${esc(brand(k).name)}</h3><div class="sm">الموظفون: <b>${rs.length}</b> · متوسط الإنجاز: <b>${pctTxt(a.length?a.reduce((x,r)=>x+r.s.pct,0)/a.length:null)}</b></div><div class="sm">مبادرات: ${rs.reduce((x,r)=>x+r.s.inits,0)} · منجزات: ${rs.reduce((x,r)=>x+r.s.achs,0)} · معلق: ${rs.reduce((x,r)=>x+r.s.pending+r.s.pendI,0)}</div></div>`}).join('')}</div>`:'';
+  return `<div class="row between"><div><h2>لوحة المعلومات</h2><div class="muted sm">${co==='all'?'جميع الشركات':esc(brand(co).name)} · نطاق صلاحيتك · حتى ${fdate(today())}</div></div>${v.role==='admin'?`<label class="row sm" style="margin:0"><input type="checkbox" style="width:auto" ${S.allCo?'checked':''} onchange="S.allCo=this.checked;App.render()"> مجمّع لجميع الشركات</label>`:''}</div>
+  <div class="grid g5" style="margin-top:12px">
+   <div class="tile"><div class="k">الموظفون في النطاق</div><div class="v">${rows.length}</div><div class="xs muted">أهداف معتمدة: ${locked} · أوزان مكتملة: ${wOk}</div></div>
+   <div class="tile"><div class="k">متوسط الإنجاز</div><div class="v">${pctTxt(avg)}</div></div>
+   <div class="tile"><div class="k">الالتزام بالرفع في الموعد</div><div class="v">${pctTxt(due?ot/due*100:null)}</div><div class="xs muted">${ot} من ${due} · فائتة ${miss}</div></div>
+   <div class="tile"><div class="k">بانتظار المراجعة</div><div class="v">${pend}</div></div>
+   <div class="tile"><div class="k">مبادرات / منجزات معتمدة</div><div class="v">${rows.reduce((a,r)=>a+r.s.inits,0)} / ${rows.reduce((a,r)=>a+r.s.achs,0)}</div></div></div>
+  ${perCo}
+  <div class="grid g2" style="margin-top:14px"><div class="card"><h3>توزيع التقديرات المتوقعة مقابل منحنى السياسة</h3><canvas id="ch1" height="210"></canvas><div class="xs muted">منحنى السياسة: 10% / 20% / 50% / 15% / 5% (البند 2.4). التقدير هنا استرشادي حتى اعتماد التقييم.</div></div>
+   <div class="card"><h3>${co==='all'?'حسب الشركة':'حسب القسم/العقد'}</h3><canvas id="ch2" height="210"></canvas></div></div>
+  <h3 style="margin-top:18px">تفصيل الموظفين</h3>${empTable(v,list)}`;
+}
+
+/* ---------- الإدارة: المستخدمون ---------- */
+const COL_MAP={name:['الاسم','name'],email:['البريد','البريد الإلكتروني','email','e-mail'],company:['الشركة','company'],companies:['الشركات المسموحة','الشركات','companies','access'],role:['الدور','الصلاحية','role'],title:['المسمى','المسمى الوظيفي','title'],section:['القسم','section'],manager:['بريد المدير','المدير المباشر (بريد)','manager','manager email'],category:['الفئة','category']};
+function coKey(s){s=String(s||'').trim().toLowerCase();if(!s)return '';if(s.includes('nwc')||s.includes('المياه'))return 'nwc';if(s.includes('tex')||s.includes('خبراء')||s.includes('tech'))return 'tex';if(s.includes('edico')||s.includes('اديكو')||s.includes('إديكو')||s.includes('أديكو'))return 'edico';if(s.includes('الكل')||s==='all')return 'all';return ''}
+function roleKey(s){s=String(s||'').trim().toLowerCase();if(s.includes('admin')||s.includes('مدير النظام'))return 'admin';if(s.includes('deleg')||s.includes('مفوض')||s.includes('مفوّض'))return 'delegate';if(s.includes('head')||s.includes('رئيس'))return 'head';if(s.includes('contract')||s.includes('عقد'))return 'contract_manager';return 'employee'}
+function catKey(s,role){s=String(s||'');if(s.includes('تنفيذ')||s.includes('exec'))return 'exec';if(s.includes('مدير')||s.includes('رئيس')||s.includes('manager'))return 'manager';if(s.includes('موظف')||s.includes('employee'))return 'employee';return ['head','contract_manager','admin'].includes(role)?'manager':'employee'}
+function viewUsers(){
+  return `<div class="row between"><h2>المستخدمون والصلاحيات (${state.users.length})</h2><div class="row"><button class="sec" onclick="App.userEdit()">+ مستخدم</button><label class="row" style="margin:0"><span class="pill p-pri" style="cursor:pointer;padding:8px 12px" onclick="$('xl').click()">استيراد من Excel</span></label><input type="file" id="xl" accept=".xlsx,.xls,.csv" style="display:none" onchange="App.importXl(this)"></div></div>
+  <div class="note" style="margin:10px 0">أعمدة ملف Excel (الصف الأول عناوين): <b>الاسم · البريد · الشركة · الشركات المسموحة · الدور · المسمى · القسم · بريد المدير · الفئة</b>.<br>الشركة: المياه الوطنية / خبراء التقنية / اديكو. الشركات المسموحة: مفصولة بفاصلة (أو «الكل»). الدور: مدير النظام / مفوّض / رئيس قسم / مدير عقد / موظف. الفئة: موظف / مدير / تنفيذي.<br>قواعد الوصول: يدخل المستخدم فقط على الشركات المسموحة له. في شركته يرى نفسه ومن تحته في الهيكل (عبر «بريد المدير»). في أي شركة أخرى مسموحة له يرى جميع موظفيها للمتابعة والإشراف دون اعتماد. مدير العقد يرى ويدير جميع موظفي شركته. المفوّض يضيف الأهداف ويربطها استراتيجيًا لأي موظف.</div>
+  <div id="imp"></div>
+  <div class="card" style="padding:0;overflow:auto"><table><tr><th>الاسم</th><th>البريد</th><th>الشركة</th><th>الشركات المسموحة</th><th>الدور</th><th>المدير</th><th>الحالة</th><th></th></tr>
+  ${state.users.map(u=>`<tr><td><b>${esc(u.name)}</b><div class="xs muted">${esc(u.title)} · ${esc(u.section||'')}</div></td><td class="sm">${esc(u.email)}</td><td class="sm">${esc(brand(u.company).name)}</td><td class="xs">${u.companies.map(c=>esc(brand(c).name)).join('، ')}</td><td><span class="pill">${ROLE_LBL[u.role]}</span></td><td class="sm">${managerOf(u)?esc(managerOf(u).name):'—'}</td><td>${u.active!==false?'<span class="pill p-ok">نشط</span>':'<span class="pill">موقوف</span>'}</td><td><button class="sm sec" onclick="App.userEdit('${u.id}')">تعديل</button></td></tr>`).join('')}</table></div>`;
+}
+function userEdit(id){
+  const u=id?U(id):{name:'',email:'',company:'nwc',companies:['nwc'],role:'employee',title:'',section:'',manager:'',category:'employee',active:true};
+  openModal(`<h3>${id?'تعديل':'إضافة'} مستخدم</h3><div class="grid g2">
+   <div><label>الاسم</label><input id="us_n" value="${esc(u.name)}"></div><div><label>البريد الإلكتروني</label><input id="us_e" value="${esc(u.email)}"></div>
+   <div><label>الشركة الأساسية</label><select id="us_c">${CO_KEYS.map(k=>`<option value="${k}" ${u.company===k?'selected':''}>${esc(brand(k).name)}</option>`).join('')}</select></div>
+   <div><label>الشركات المسموح الدخول عليها</label><div class="row">${CO_KEYS.map(k=>`<label class="row sm" style="margin:0"><input type="checkbox" class="us_co" value="${k}" ${u.companies.includes(k)?'checked':''} style="width:auto"> ${esc(brand(k).name)}</label>`).join('')}</div></div>
+   <div><label>الدور</label><select id="us_r">${Object.keys(ROLE_LBL).map(k=>`<option value="${k}" ${u.role===k?'selected':''}>${ROLE_LBL[k]}</option>`).join('')}</select></div>
+   <div><label>فئة التقييم (أوزان الأهداف/الجدارات)</label><select id="us_cat">${Object.keys(CAT_LBL).map(k=>`<option value="${k}" ${u.category===k?'selected':''}>${CAT_LBL[k]} (${state.settings.weights[k].join('/')})</option>`).join('')}</select></div>
+   <div><label>المسمى الوظيفي</label><input id="us_t" value="${esc(u.title)}"></div><div><label>القسم / العقد</label><input id="us_s" value="${esc(u.section)}"></div>
+   <div><label>المدير المباشر</label><select id="us_m"><option value="">— خارج النظام —</option>${state.users.filter(x=>x.id!==id).map(x=>`<option value="${esc(x.email)}" ${x.email===u.manager?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
+   <div><label>الحالة</label><select id="us_a"><option value="1">نشط</option><option value="0" ${u.active===false?'selected':''}>موقوف</option></select></div></div>
+   <div id="userr"></div><div class="row" style="margin-top:12px"><button onclick="App.userSave('${id||''}')">حفظ</button><button class="sec" onclick="App.close()">إلغاء</button></div>`);
+}
+function userSave(id){
+  const o={name:val('us_n'),email:val('us_e').toLowerCase(),company:val('us_c'),companies:[...document.querySelectorAll('.us_co:checked')].map(x=>x.value),role:val('us_r'),category:val('us_cat'),title:val('us_t'),section:val('us_s'),manager:val('us_m'),active:val('us_a')==='1'};
+  const err=[];if(!o.name)err.push('الاسم مطلوب');if(!/^\S+@\S+\.\S+$/.test(o.email))err.push('بريد غير صحيح');const dup=byEmail(o.email);if(dup&&dup.id!==id)err.push('البريد مسجل لمستخدم آخر');
+  if(!o.companies.includes(o.company))o.companies.unshift(o.company);
+  if(err.length){$('userr').innerHTML=`<div class="errbox">${err.join('<br>')}</div>`;return}
+  if(id){const u=U(id),old=u.email;Object.assign(u,o);if(old!==o.email)state.users.forEach(x=>{if(x.manager===old)x.manager=o.email})}else state.users.push({id:nid(),...o});
+  log(`${id?'تعديل':'إضافة'} مستخدم ${o.name}`);save();closeModal();render();toast('تم الحفظ');
+}
+function importXl(inp){
+  const f=inp.files[0];if(!f)return;if(!window.XLSX){toast('مكتبة Excel لم تُحمّل');return}
+  const fr=new FileReader();fr.onload=e=>{try{
+    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+    const pick=(r,k)=>{for(const h of Object.keys(r)){const hh=h.trim().toLowerCase();if(COL_MAP[k].some(c=>c.toLowerCase()===hh))return String(r[h]).trim()}return ''};
+    let add=0,upd=0;const errs=[];
+    rows.forEach((r,i)=>{const email=pick(r,'email').toLowerCase(),name=pick(r,'name');if(!email||!name){errs.push(`صف ${i+2}: الاسم والبريد مطلوبان`);return}
+      const company=coKey(pick(r,'company'));if(!company||company==='all'){errs.push(`صف ${i+2}: شركة غير معروفة`);return}
+      let cos=pick(r,'companies').split(/[,،;]/).map(coKey).filter(Boolean);if(cos.includes('all'))cos=[...CO_KEYS];if(!cos.includes(company))cos.unshift(company);cos=[...new Set(cos)];
+      const role=roleKey(pick(r,'role')),o={name,email,company,companies:cos,role,title:pick(r,'title'),section:pick(r,'section'),manager:pick(r,'manager').toLowerCase(),category:catKey(pick(r,'category'),role),active:true};
+      const ex=byEmail(email);if(ex){Object.assign(ex,o);upd++}else{state.users.push({id:nid(),...o});add++}});
+    log(`استيراد Excel: ${add} جديد، ${upd} محدث`);save();render();
+    $('imp').innerHTML=`<div class="${errs.length?'warnbox':'note'}" style="margin-bottom:10px">تم الاستيراد: ${add} جديد، ${upd} محدث.${errs.length?'<br>'+errs.map(esc).join('<br>'):''}</div>`;
+  }catch(err){toast('تعذّر قراءة الملف: '+err.message)}};fr.readAsArrayBuffer(f);
+}
+
+/* ---------- الإعدادات ---------- */
+function viewSettings(){
+  const st=state.settings,W=st.windows,B=st.bands;
+  return `<h2>الإعدادات والسياسة</h2><div class="grid g2" style="margin-top:10px">
+   <div class="card"><h3>دورة الأداء</h3><div class="grid g3"><div><label>بداية الدورة</label><input type="date" id="s_cs" value="${st.cycleStart}"></div><div><label>نهاية النصف الأول</label><input type="date" id="s_me" value="${st.midEnd}"></div><div><label>نهاية الدورة</label><input type="date" id="s_ce" value="${st.cycleEnd}"></div></div>
+    <label>تاريخ المحاكاة (للتجربة فقط — اتركه فارغًا للتشغيل الفعلي)</label><div class="row"><input type="date" id="s_sim" value="${st.simDate||''}" style="flex:1"><button class="sec sm" onclick="$('s_sim').value=''">مسح</button></div></div>
+   <div class="card"><h3>نوافذ الرفع (أيام بعد نهاية الفترة)</h3><div class="grid g3">${Object.keys(W).map(k=>`<div><label>${FREQ_LBL[k]}</label><input type="number" min="1" id="s_w_${k}" value="${W[k]}"></div>`).join('')}</div><div class="xs muted">التسليم النهائي: مفتوح من بداية الدورة حتى الموعد + الأيام المحددة.</div></div>
+   <div class="card"><h3>حدود التقدير (البند 2.3)</h3><div class="grid g4"><div><label>الدرجة 5 من</label><input type="number" id="s_b5" value="${B.r5}"></div><div><label>الدرجة 4 من</label><input type="number" id="s_b4" value="${B.r4}"></div><div><label>الدرجة 3 من</label><input type="number" id="s_b3" value="${B.r3}"></div><div><label>الدرجة 2 من</label><input type="number" id="s_b2" value="${B.r2}"></div></div>
+    <label>الحد الأعلى لنسبة الإنجاز المعتمدة لأي فترة (%)</label><input type="number" id="s_max" value="${st.maxPct}">
+    <label class="row" style="gap:6px;margin-top:10px"><input type="checkbox" id="s_g" ${st.gating?'checked':''} style="width:auto"> تطبيق شرط الإدارة: الدرجة 5 تتطلب منجزًا ومبادرة معتمدين، والدرجة 4 تتطلب مبادرة ذات أثر على الإدارة</label></div>
+   <div class="card"><h3>أوزان التقييم حسب الفئة (البند 2.2)</h3>${Object.keys(CAT_LBL).map(k=>`<div class="row"><span style="flex:1" class="sm">${CAT_LBL[k]}</span><span class="xs">الأهداف</span><input type="number" id="s_wt_${k}" value="${st.weights[k][0]}" style="width:80px"><span class="xs">الجدارات/المؤشرات العامة = 100 − الأهداف</span></div>`).join('')}</div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>هوية الشركات</h3><div class="grid g3">${CO_KEYS.map(k=>{const b=brand(k);return `<div class="card"><label>الاسم</label><input id="b_n_${k}" value="${esc(b.name)}"><label>الاسم بالإنجليزية</label><input id="b_e_${k}" value="${esc(b.en)}"><div class="row"><div style="flex:1"><label>اللون الرئيسي</label><input type="color" id="b_p_${k}" value="${b.pri}" style="height:38px"></div><div style="flex:1"><label>اللون الثانوي</label><input type="color" id="b_a_${k}" value="${b.acc}" style="height:38px"></div></div><label>الشعار (PNG/SVG حتى 300 كيلوبايت)</label><input type="file" accept="image/*" onchange="App.logo('${k}',this)">${b.logo?`<img src="${b.logo}" style="max-height:50px;margin-top:6px"><button class="ghost sm" onclick="App.logo('${k}',null)">إزالة</button>`:''}</div>`}).join('')}</div>
+   <div class="xs muted" style="margin-top:6px">ألوان خبراء التقنية واديكو افتراضية — حدّثها وارفع الشعارات الرسمية المعتمدة من كل شركة.</div></div>
+  <div class="row" style="margin-top:14px"><button onclick="App.saveSettings()">حفظ الإعدادات</button></div>`;
+}
+function saveSettings(){
+  const st=state.settings;st.cycleStart=val('s_cs');st.midEnd=val('s_me');st.cycleEnd=val('s_ce');st.simDate=val('s_sim')||'';
+  Object.keys(st.windows).forEach(k=>st.windows[k]=Math.max(1,+val('s_w_'+k)||1));st.bands={r5:+val('s_b5'),r4:+val('s_b4'),r3:+val('s_b3'),r2:+val('s_b2')};st.maxPct=+val('s_max')||150;st.gating=$('s_g').checked;
+  Object.keys(CAT_LBL).forEach(k=>{const g=Math.min(100,Math.max(0,+val('s_wt_'+k)));st.weights[k]=[g,100-g]});
+  CO_KEYS.forEach(k=>{const b=brand(k);b.name=val('b_n_'+k)||b.name;b.en=val('b_e_'+k);b.pri=val('b_p_'+k);b.acc=val('b_a_'+k)});
+  log('تحديث الإعدادات');save();render();toast('تم حفظ الإعدادات');
+}
+function logo(k,inp){if(!inp){brand(k).logo='';save();render();return}const f=inp.files[0];if(!f)return;if(f.size>300*1024){toast('الشعار أكبر من 300 كيلوبايت');return}const fr=new FileReader();fr.onload=()=>{brand(k).logo=fr.result;save();render()};fr.readAsDataURL(f)}
+
+/* ---------- القوائم الاستراتيجية ---------- */
+function viewLists(v){
+  const ed=v.role==='admin'||v.role==='delegate',ta=(id,l)=>`<textarea id="${id}" style="min-height:300px;font-size:13px" ${ed?'':'disabled'}>${esc(l.map(x=>x[0]+' | '+x[1]).join('\n'))}</textarea>`;
+  return `<h2>القوائم الاستراتيجية</h2><div class="note" style="margin:10px 0">صيغة كل سطر: <b>الرمز | الاسم</b>. شركة المياه الوطنية تُربط بأهداف الشركة الاستراتيجية ومبادراتها (استراتيجية 2026–2030، النسخة الثانية). خبراء التقنية واديكو تُربطان بأهداف الإدارة 2027 بوصفها أهدافًا استراتيجية لهما.</div>
+  <div class="grid g3"><div class="card"><h3>أهداف NWC الاستراتيجية</h3>${ta('l_s',state.lists.strat)}</div><div class="card"><h3>المبادرات الاستراتيجية (27)</h3>${ta('l_i',state.lists.init)}</div><div class="card"><h3>أهداف الإدارة 2027 (خبراء/اديكو)</h3>${ta('l_d',state.lists.dept)}</div></div>
+  ${ed?`<div class="row" style="margin-top:12px"><button onclick="App.saveLists()">حفظ القوائم</button></div>`:''}`;
+}
+function saveLists(){const p=id=>val(id).split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[0]).map(x=>[x[0],x[1]||'']);state.lists={strat:p('l_s'),init:p('l_i'),dept:p('l_d')};log('تحديث القوائم الاستراتيجية');save();toast('تم الحفظ')}
+
+/* ---------- السجل والبيانات ---------- */
+function viewLog(){return `<h2>سجل العمليات</h2><div class="card" style="padding:0;overflow:auto;margin-top:10px"><table><tr><th>الوقت</th><th>المستخدم</th><th>العملية</th></tr>${state.log.slice(0,400).map(l=>`<tr><td class="xs">${esc(l.ts.replace('T',' ').slice(0,16))}</td><td class="sm">${esc(l.user)}</td><td class="sm">${esc(l.action)}</td></tr>`).join('')}</table></div>`}
+function viewData(){
+  let size=0;try{size=(localStorage.getItem(KEY)||'').length}catch(e){}
+  return `<h2>البيانات</h2><div class="warnbox" style="margin:10px 0">النموذج الأولي يحفظ البيانات في متصفحك فقط (${Math.round(size/1024)} كيلوبايت). لا يراها غيرك ولا تنتقل لجهاز آخر. النسخة التشغيلية تحتاج قاعدة بيانات مركزية.</div>
+  <div class="grid g2"><div class="card"><h3>تصدير</h3><button onclick="App.exportData()">نسخ البيانات (JSON)</button><textarea id="exp" style="margin-top:8px;min-height:120px;font-size:11px" readonly></textarea></div>
+  <div class="card"><h3>استيراد</h3><input type="file" accept=".json,.txt" onchange="App.importData(this)"><div class="hr"></div><h3>إعادة الضبط</h3><div class="row"><button class="sec" onclick="App.resetDemo()">إعادة البيانات التجريبية</button><button class="bad" onclick="App.clearAll()">مسح كل شيء عدا مدير النظام</button></div></div></div>`;
+}
+function exportData(){const t=JSON.stringify(state);$('exp').value=t;try{navigator.clipboard.writeText(t).then(()=>toast('تم النسخ'),()=>toast('حدد النص وانسخه يدويًا'))}catch(e){toast('حدد النص وانسخه يدويًا')}}
+function importData(inp){const f=inp.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{try{const o=JSON.parse(fr.result);if(!o.users||!o.settings)throw new Error('ملف غير صالح');state=o;save();render();toast('تم الاستيراد')}catch(e){toast('خطأ: '+e.message)}};fr.readAsText(f)}
+function resetDemo(){confirmBox('إعادة البيانات التجريبية ستحذف كل ما أُدخل. متابعة؟',()=>{state=makeDemo();save();S.view='home';render();toast('تمت إعادة الضبط')})}
+function clearAll(){confirmBox('سيُحذف جميع المستخدمين والأهداف والإنجازات عدا حساب مدير النظام. متابعة؟',()=>{const a=me();state.users=[a];a.manager='';state.goals=[];state.updates=[];state.initiatives=[];state.achievements=[];state.evals={};state.exceptions=[];state.goalMeta={};state.settings.simDate='';log('مسح كامل للبيانات');save();render();toast('تم')})}
+
+/* ---------- اعتماد/فتح الأهداف ---------- */
+function lockGoals(uid){const s=stats(U(uid));if(s.wTot!==100){toast('مجموع الأوزان يجب أن يكون 100%');return}const bad=goalsOf(uid).find(g=>Math.abs(g.subs.reduce((a,x)=>a+(+x.weight||0),0)-g.weight)>0.01);if(bad){toast('أوزان الفرعية في «'+bad.title+'» غير مطابقة');return}meta(uid).locked=true;meta(uid).lockedBy=me().name;meta(uid).lockedTs=nowTs();log('اعتماد أهداف '+U(uid).name);save();render();toast('تم اعتماد الأهداف')}
+function unlockGoals(uid){openModal(`<h3>فتح الأهداف للتعديل</h3><label>السبب (يُحفظ في سجل التعديلات المعتمدة)</label><input id="ul_r"><div class="row" style="margin-top:10px"><button onclick="App.doUnlock('${uid}')">فتح</button><button class="sec" onclick="App.close()">إلغاء</button></div>`)}
+function doUnlock(uid){const r=val('ul_r');if(!r){toast('السبب مطلوب');return}const m=meta(uid);m.locked=false;m.changes.push({ts:nowTs(),by:me().name,reason:'فتح للتعديل: '+r});log('فتح أهداف '+U(uid).name);save();closeModal();render()}
+function goalDel(gid){confirmBox('حذف الهدف وجميع إنجازاته؟',()=>{const g=state.goals.find(x=>x.id===gid),ids=new Set(g.subs.map(s=>s.id));state.updates=state.updates.filter(u=>!ids.has(u.subId));state.goals=state.goals.filter(x=>x.id!==gid);if(meta(g.userId).locked)meta(g.userId).changes.push({ts:nowTs(),by:me().name,reason:'حذف «'+g.title+'»'});log('حذف هدف '+g.title);save();closeModal();render()})}
+
+/* ---------- نوافذ وإشعارات ---------- */
+function openModal(h){$('modal').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)App.close()"><div class="modal">${h}</div></div>`}
+function closeModal(){$('modal').innerHTML=''}
+let tt;function toast(m){$('toast').innerHTML=`<div class="toast">${esc(m)}</div>`;clearTimeout(tt);tt=setTimeout(()=>$('toast').innerHTML='',2600)}
+let cbFn=null;function confirmBox(m,fn){cbFn=fn;openModal(`<h3>تأكيد</h3><p>${esc(m)}</p><div class="row"><button class="bad" onclick="App.cb()">نعم</button><button class="sec" onclick="App.close()">إلغاء</button></div>`)}
+
+/* ---------- واجهة الأحداث ---------- */
+window.App={render,go,close:closeModal,period,submitUpd,reviewUpd,comment,addExc,goalEdit,goalSave,goalDel,lockGoals,unlockGoals,doUnlock,
+  subAdd(){draftSubs.push({id:nid(),title:'',kpi:'',target:'',method:'',weight:'',freq:'monthly',due:''});drawSubs()},subDel(i){draftSubs.splice(i,1);drawSubs()},subSet(i,k,v){draftSubs[i][k]=v},redrawSubs:drawSubs,subSum,
+  initForm,initSave,reviewInit,evSet,evFinal,evReopen,evAck,userEdit,userSave,importXl,saveSettings,logo,saveLists,exportData,importData,resetDemo,clearAll,cb(){const f=cbFn;cbFn=null;closeModal();f&&f()},
+  tab(t){S.tab=t;saveSess();render()},
+  pick(c){S.company=c;S.userId=null;saveSess();render()},
+  login(){const e=val('em'),u=byEmail(e),err=$('lerr');
+    if(!u||u.active===false){err.innerHTML='<div class="errbox" style="margin-top:8px">البريد غير مسجل في النظام أو الحساب موقوف.</div>';return}
+    if(!u.companies.includes(S.company)){err.innerHTML=`<div class="errbox" style="margin-top:8px">غير مصرح لك بالدخول على ${esc(brand(S.company).name)}. الشركات المتاحة لك: ${u.companies.map(c=>esc(brand(c).name)).join('، ')}.</div>`;return}
+    S.userId=u.id;S.view='home';S.tab='goals';log('تسجيل دخول — '+brand(S.company).name);save();saveSess();render()},
+  logout(){S.userId=null;S.view='home';saveSess();render()},
+  switchCo(c){S.company=c;S.view='home';S.allCo=false;saveSess();render()}};
+load();render();
+</script>
+</body>
+</html>
